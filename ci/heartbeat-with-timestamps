@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Prints the current time every five minutes.
+# Run in the background to help account for time spent in tests and to prevent
+# Travis from killing a job due to 10 minutes of inactivity.
+
+while true; do
+    echo "[$(date -u)]"
+    sleep $((5 * 60))
+done

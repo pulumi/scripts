@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# Print "IP hostname" lines for Pulumi hosts appropriate for use in /etc/hosts.
+# Example use:
+#   ./pulumi-hosts | sudo tee -a /etc/hosts
+
+set -o nounset -o errexit -o pipefail
+
+PULUMI_HOSTS='api.pulumi-test.io api.pulumi-staging.io api.pulumi.com'
+
+# Start with a newline in case /etc/hosts doesn't end with one.
+echo
+echo '# Pulumi hosts'
+
+for host in ${PULUMI_HOSTS}; do
+    # Use printf with width specifier to align records.
+    printf '%-15s %s\n' "$(dig +short -t A "${host}" | head -1)" "${host}"
+done
+
+echo

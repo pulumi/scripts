@@ -1,0 +1,17 @@
+#!/usr/bin/env python
+
+# Pipe stdin to stdout, prepending each line with the seconds elapsed since
+# the start of the command.
+
+from __future__ import print_function
+
+from datetime import datetime
+import sys
+
+start = datetime.utcnow()
+
+# Iterate over calls to readline(). Iterating sys.stdin directly still returns
+# lines, but with more buffering. https://stackoverflow.com/a/28919832
+for line in iter(sys.stdin.readline, ''):
+    since = datetime.utcnow() - start
+    print('[{:7.3f}] {}'.format(since.total_seconds(), line), end='')
