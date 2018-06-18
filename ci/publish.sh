@@ -45,7 +45,7 @@ PUBPREFIX=s3://eng.pulumi.com/releases/${RELEASENAME}
 for target in ${@:3}; do
     PUBTARGET=${PUBPREFIX}/${target}.tgz
     echo Publishing ${RELEASENAME}@${target} to: ${PUBTARGET}
-    if [ -z "${FIRSTTARGET}" ]; then
+    if [ -z "${FIRSTTARGET:-}" ]; then
         # Upload the first one for real.
         aws s3 cp ${PUBFILE} ${PUBTARGET}
         grant_pulumi_accts_access ${PUBTARGET}
