@@ -2,6 +2,12 @@
 
 set -o nounset -o errexit -o pipefail
 
+if [ -z "${AWS_ACCESS_KEY_ID:-}" ]; then
+    echo "Some tests failed, but AWS_ACCESS_KEY was not defined, so we will not upload failure logs."
+    echo "This happens when the tests failed while building a Pull Request job from a fork on Travis."
+    exit 0
+fi
+
 # before tests, source keep-failed-tests.sh
 
 tar czf - -C "${PULUMI_FAILED_TESTS_DIR}" . | aws --region us-west-2 s3 cp - "s3://eng.pulumi.com/travis-logs/${TRAVIS_REPO_SLUG}/${TRAVIS_JOB_NUMBER}/failed-tests.tar.gz" --acl bucket-owner-full-control
