@@ -1,0 +1,41 @@
+#!/bin/bash
+set -o nounset -o errexit -o pipefail
+
+# Install some tools
+go get github.com/BurntSushi/toml
+go install github.com/pulumi/scripts/hack-vendor/cmd/vendor-git-server
+go install github.com/pulumi/scripts/hack-vendor/cmd/change-constraint
+
+on_exit() {
+    mv Gopkg.toml.orig Gopkg.toml
+    sudo killall vendor-git-server
+}
+
+if [ ! -e Gopkg.toml ]; then
+    "error: run this script from the root of a project you'd like to modify the dependencies of"
+fi
+
+# Back up the existing file (since we are going to modify it)
+cp Gopkg.toml Gopkg.toml.orig
+
+trap on_exit EXIT
+
+for PACKAGE in "$@"; do
+    COMMIT=$(git -C $(go env GOPATH)/src/${PACKAGE} rev-parse HEAD)
+
+    if [ -z "${COMMIT}" ]; then
+        echo "error: could not determine commit for ${PACKAGE}"
+        exit 1
+    fi
+
+    echo "setting ${PACKAGE} to version ${COMMIT}"
+    change-constraint -name "${PACKAGE}" -revision "${COMMIT}"
+done
+
+echo "running vendor-git-server, this requires superuser access to bind to port 80..."
+
+sudo sh -c "$(command -v vendor-git-server) -root $(go env GOPATH)/src &"
+
+echo "server running..."
+
+dep ensure -v
