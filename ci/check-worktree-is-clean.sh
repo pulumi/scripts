@@ -9,5 +9,6 @@ git update-index -q --refresh
 if ! git diff-files --quiet; then
     >&2 echo "error: working tree is not clean, aborting!"
     git status
+    git diff
     exit 1
 fi
