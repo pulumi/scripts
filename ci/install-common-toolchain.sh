@@ -70,6 +70,7 @@ nvm install ${NODE_VERSION-v8.11.1}
 
     echo "installing pandoc, so we can generate README.rst for Python packages"
     if [ "${TRAVIS_OS_NAME:-}" = "linux" ]; then
+        sudo apt-get update
         sudo apt-get install pandoc
     else
         brew install pandoc
