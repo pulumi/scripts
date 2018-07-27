@@ -7,16 +7,21 @@ go install github.com/pulumi/scripts/hack-vendor/cmd/vendor-git-server
 go install github.com/pulumi/scripts/hack-vendor/cmd/change-constraint
 
 on_exit() {
-    mv Gopkg.toml.orig Gopkg.toml
+    if [ -e Gopkg.toml.orig ]; then
+        mv Gopkg.toml.orig Gopkg.toml
+    fi
     sudo killall vendor-git-server
 }
 
 if [ ! -e Gopkg.toml ]; then
     "error: run this script from the root of a project you'd like to modify the dependencies of"
+    exit 1
 fi
 
-# Back up the existing file (since we are going to modify it)
-cp Gopkg.toml Gopkg.toml.orig
+if [ "${1:-}" != "--keep-toml" ]; then
+    # Back up the existing file (since we are going to modify it)
+    cp Gopkg.toml Gopkg.toml.orig
+fi
 
 trap on_exit EXIT
 
