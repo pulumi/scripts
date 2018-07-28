@@ -63,6 +63,13 @@ func main() {
 		os.Exit(1)
 	}
 
+	for idx, constraint := range gopkg.Constraint {
+		if constraint.Name == name {
+			gopkg.Constraint = append(gopkg.Constraint[:idx], gopkg.Constraint[idx+1:]...)
+			break
+		}
+	}
+
 	hadExisting := false
 	for idx, override := range gopkg.Override {
 		if override.Name == name {
@@ -72,7 +79,7 @@ func main() {
 				newSource = serverPrefix + override.Source
 			}
 
-			gopkg.Override[idx] = Override{
+			gopkg.Override[idx] = Constraint{
 				Name:     name,
 				Revision: revision,
 				Source:   newSource,
@@ -84,7 +91,7 @@ func main() {
 	}
 
 	if !hadExisting {
-		gopkg.Override = append(gopkg.Override, Override{
+		gopkg.Override = append(gopkg.Override, Constraint{
 			Name:     name,
 			Revision: revision,
 			Source:   serverPrefix + name,
@@ -106,12 +113,13 @@ func main() {
 }
 
 type Gopkg struct {
-	Required []string   `toml:"required"`
-	Ignored  []string   `toml:"ignored"`
-	Override []Override `toml:"override"`
+	Required   []string     `toml:"required"`
+	Ignored    []string     `toml:"ignored"`
+	Constraint []Constraint `toml:"constraint,omitempty"`
+	Override   []Constraint `toml:"override,omitempty"`
 }
 
-type Override struct {
+type Constraint struct {
 	Name     string `toml:"name"`
 	Version  string `toml:"version,omitempty"`
 	Branch   string `toml:"branch,omitempty"`

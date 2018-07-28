@@ -18,7 +18,9 @@ if [ ! -e Gopkg.toml ]; then
     exit 1
 fi
 
-if [ "${1:-}" != "--keep-toml" ]; then
+if [ "${1:-}" = "--keep-toml" ]; then
+    shift
+else
     # Back up the existing file (since we are going to modify it)
     cp Gopkg.toml Gopkg.toml.orig
 fi
