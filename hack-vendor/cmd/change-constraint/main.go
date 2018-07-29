@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"strings"
+	"path"
 
 	"github.com/BurntSushi/toml"
 )
@@ -32,7 +32,7 @@ func main() {
 
 	flag.StringVar(&name, "name", "", "the name of the project to modify")
 	flag.StringVar(&revision, "revision", "", "the revision of the project to pin to")
-	flag.StringVar(&serverPrefix, "serverPrefix", "http://localhost.pulumi.engineering/", "the url of a git server that exposes $GOPATH")
+	flag.StringVar(&serverPrefix, "serverPrefix", "", "the url of a git server that exposes $GOPATH")
 	flag.StringVar(&gopkgFile, "file", "Gopkg.toml", "the path to the Gopkg.toml to modify")
 	flag.Parse()
 
@@ -44,10 +44,6 @@ func main() {
 	if revision == "" {
 		fmt.Fprintf(os.Stderr, "error: must provide version to use with -version\n")
 		os.Exit(1)
-	}
-
-	if !strings.HasSuffix(serverPrefix, "/") {
-		serverPrefix = serverPrefix + "/"
 	}
 
 	b, err := ioutil.ReadFile(gopkgFile)
@@ -73,16 +69,16 @@ func main() {
 	hadExisting := false
 	for idx, override := range gopkg.Override {
 		if override.Name == name {
-			newSource := serverPrefix + override.Name
+			source := override.Name
 
 			if override.Source != "" {
-				newSource = serverPrefix + override.Source
+				source = override.Source
 			}
 
 			gopkg.Override[idx] = Constraint{
 				Name:     name,
 				Revision: revision,
-				Source:   newSource,
+				Source:   path.Join(serverPrefix, source),
 			}
 
 			hadExisting = true
@@ -94,7 +90,7 @@ func main() {
 		gopkg.Override = append(gopkg.Override, Constraint{
 			Name:     name,
 			Revision: revision,
-			Source:   serverPrefix + name,
+			Source:   path.Join(serverPrefix, name),
 		})
 	}
 

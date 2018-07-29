@@ -36,7 +36,7 @@ for PACKAGE in "$@"; do
     fi
 
     echo "setting ${PACKAGE} to version ${COMMIT}"
-    change-constraint -name "${PACKAGE}" -revision "${COMMIT}"
+    change-constraint -name "${PACKAGE}" -revision "${COMMIT}" -serverPrefix "http://localhost.pulumi.engineering/""
 done
 
 echo "running vendor-git-server, this requires superuser access to bind to port 80..."
