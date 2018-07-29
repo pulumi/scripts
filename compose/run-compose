@@ -1,0 +1,82 @@
+#!/bin/bash
+set -eou pipefail
+SCRIPT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
+
+if [ -z "${1:-}" ]; then
+    echo "error: usage $0 <build-id>"
+    exit 1
+fi
+
+if [ -e "./scripts/compose-skip-build" ] && ./scripts/compose-skip-build; then
+    echo "./scripts/compose-skip-build returned true, skipping build"
+    exit 0
+fi
+
+BUILD_ID="$1"
+S3_ROOT="s3://public.eng.pulumi.com/compose/build/${BUILD_ID}"
+HTTP_ROOT="http://public.eng.pulumi.com.s3.amazonaws.com/compose/build/${BUILD_ID}"
+WORK_DIR=$(mktemp -d)
+
+aws s3 sync "${S3_ROOT}" "${WORK_DIR}"
+
+# The travis API does not let us schedule a build for a specific commit, so instead
+# we pass along the commit we'd like to use and check it out before doing our work.
+git fetch origin && git checkout "${PULUMI_COMPOSE_BUILD_SHA}"
+
+# copy binaries
+if [ -d "${WORK_DIR}/bin" ]; then
+   [ -d "${PULUMI_ROOT:-$(go env GOPATH)}/bin" ] || mkdir -p "${PULUMI_ROOT:-$(go env GOPATH)}/bin"
+   cp -v "${WORK_DIR}/bin/"* "${PULUMI_ROOT:-$(go env GOPATH)}/bin"
+   chmod +x "${PULUMI_ROOT:-$(go env GOPATH)}/bin/"*
+fi
+
+# run change-constraint
+if [ -e "Gopkg.lock" ]; then
+    go get github.com/BurntSushi/toml
+    go install github.com/pulumi/scripts/hack-vendor/cmd/change-constraint
+
+    for repo in "${WORK_DIR}/commits/"*; do
+        IMPORT="github.com/pulumi/$(basename ${repo})"
+        if grep -q "name = \"${IMPORT}\"" Gopkg.lock; then
+            echo "forcing ${IMPORT} version to $(<"${repo}") in Gopkg.toml"
+            change-constraint -name "${IMPORT}" -revision "$(<"${repo}")"
+        fi
+    done
+fi
+
+# rewrite package.json
+if [ -d "${WORK_DIR}/nodejs" ]; then
+    for tgz in "${WORK_DIR}/nodejs"/*; do
+        PACKAGE=$(tar -Oxf "${tgz}" package/package.json | jq -r .name)
+        git ls-files '*/package.json' | xargs -L1 -I % node "${SCRIPT_ROOT}/override-package-version.js" ./% "${PACKAGE}" "${HTTP_ROOT}/nodejs/$(basename "${tgz}")"
+    done
+fi
+
+# rewrite resources.go
+if [ -d "${WORK_DIR}/nodejs" ] && [ -e "resources.go" ]; then
+    for tgz in "${WORK_DIR}/nodejs"/*; do
+        PACKAGE=$(tar -Oxf "${tgz}" package/package.json | jq -r .name)
+        echo "forcing ${PACKAGE} version to ${HTTP_ROOT}/nodejs/$(basename "${tgz}") in resources.go"
+        sed -i "s|\"${PACKAGE}\"\\(.*\\)\".*\"|\"${PACKAGE}\"\\1\"${HTTP_ROOT}/nodejs/$(basename "${tgz}")\"|g" resources.go
+    done
+fi
+
+echo "Updated files"
+git diff
+
+# do an ensure to pick up the changes we've made to Gopkg.toml and package.jsons.
+make ensure
+
+# do the build
+make only_build
+
+# upload artifacts
+if [ -e "./scripts/publish-compose-artifacts" ]; then
+    ./scripts/publish-compose-artifacts "${S3_ROOT}"
+fi
+
+# signal that the build is complete. This will let the scheduler kick off more jobs.
+curl -X POST "https://tgp3fq85v3.execute-api.us-west-2.amazonaws.com/stage/job/${BUILD_ID}/build-complete/${TRAVIS_REPO_SLUG#pulumi\/}"
+
+# run tests
+make only_test

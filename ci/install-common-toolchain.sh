@@ -25,7 +25,7 @@ nvm install ${NODE_VERSION-v8.11.1}
     esac
 
     # On Travis, pip is called pip2.7, so alias it, also install jq
-    if [ "${TRAVIS_OS_NAME:-}" = "osx" ]; then
+    if [ "${TRAVIS_OS_NAME:-}" = "osx" ] && [ ! -e /usr/local/bin/pip ]; then
         sudo ln -s $(which pip2.7) /usr/local/bin/pip
         brew install jq
     fi
@@ -70,7 +70,7 @@ nvm install ${NODE_VERSION-v8.11.1}
 
     echo "installing pandoc, so we can generate README.rst for Python packages"
     if [ "${TRAVIS_OS_NAME:-}" = "linux" ]; then
-        sudo apt-get update
+        sudo apt-get update || true
         sudo apt-get install pandoc
     else
         brew install pandoc
