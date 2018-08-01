@@ -25,7 +25,7 @@ nvm install ${NODE_VERSION-v8.11.1}
     esac
 
     # On Travis, pip is called pip2.7, so alias it, also install jq
-    if [ "${TRAVIS_OS_NAME:-}" = "osx" ]; then
+    if [ "${TRAVIS_OS_NAME:-}" = "osx" ] && [ ! -f /usr/local/bin/pip ]; then
         sudo ln -s $(which pip2.7) /usr/local/bin/pip
         brew install jq
     fi
