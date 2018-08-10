@@ -73,7 +73,11 @@ nvm install ${NODE_VERSION-v8.11.1}
 
     echo "installing pandoc, so we can generate README.rst for Python packages"
     if [ "${TRAVIS_OS_NAME:-}" = "linux" ]; then
-        sudo apt-get update
+        # We've seen cases in Travuis where `apt-get update` fails because
+        # some sources couldn't be refreshed. Instead of failing the entire
+        # operation eagerly, allow this command to fail. If we don't refresh
+        # enough sources to install software later, we'll blow up then.
+        sudo apt-get update || true
         sudo apt-get install pandoc
     else
         brew install pandoc
