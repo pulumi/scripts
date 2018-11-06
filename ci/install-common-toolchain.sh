@@ -13,6 +13,7 @@ nvm install ${NODE_VERSION-v8.11.1}
     GOMETALINTER_VERSION="2.0.3"
     PIP_VERSION="10.0.0"
     VIRTUALENV_VERSION="15.2.0"
+    PIPENV_VERSION="2018.10.13"
     AWSCLI_VERSION="1.14.30"
     WHEEL_VERSION="0.30.0"
     TWINE_VERSION="1.9.1"
@@ -64,6 +65,9 @@ nvm install ${NODE_VERSION-v8.11.1}
     echo "installing virtualenv ${VIRTUALENV_VERSION}"
     sudo pip install "virtualenv==${VIRTUALENV_VERSION}"
     pip install --user "virtualenv==${VIRTUALENV_VERSION}"
+
+    echo "installing pipenv ${PIPENV_VERSION}"
+    pip install --user "pipenv==${PIPENV_VERSION}"
 
     echo "installing AWS cli ${AWSCLI_VERSION}"
     pip install --user "awscli==${AWSCLI_VERSION}"
