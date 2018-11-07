@@ -25,13 +25,9 @@ nvm install ${NODE_VERSION-v8.11.1}
         *) echo "error: unknown host os $(uname)" ; exit 1;;
     esac
 
-    # Tool installs and workarounds specific to macOS.
+    # jq isn't present on OSX, but we use it in some of our scripts. Install it.
     if [ "${TRAVIS_OS_NAME:-}" = "osx" ]; then
         brew install jq
-        # On Travis, pip is called pip2.7, so alias it.
-        if [ ! -f /usr/local/bin/pip ]; then
-            sudo ln -s $(which pip2.7) /usr/local/bin/pip
-        fi
     fi
 
     echo "installing yarn ${YARN_VERSION}"
@@ -93,11 +89,9 @@ nvm install ${NODE_VERSION-v8.11.1}
 
 # By default some tools are not on the PATH, let's fix that
 
-# On OSX, the user folder that `pip` installs tools to is not on the
-# $PATH by default.
+# On OSX, the location that pip installs helper scripts to isn't on the path
 if [ "${TRAVIS_OS_NAME:-}" = "osx" ]; then
     export PATH=$PATH:$HOME/Library/Python/2.7/bin
-    export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python2.7/site-packages
 fi
 
 # Add yarn to the $PATH
