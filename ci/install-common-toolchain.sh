@@ -11,6 +11,7 @@ nvm install ${NODE_VERSION-v8.11.1}
     YARN_VERSION="1.3.2"
     DEP_VERSION="0.4.1"
     GOMETALINTER_VERSION="2.0.3"
+    GOLANGCI_LINT_VERSION="1.12"
     PIP_VERSION="10.0.0"
     VIRTUALENV_VERSION="15.2.0"
     PIPENV_VERSION="2018.10.13"
@@ -47,6 +48,9 @@ nvm install ${NODE_VERSION-v8.11.1}
     # of the linters folder and into GOBIN (which we know is on the $PATH)
     mv "$(go env GOPATH)/bin/linters/"* "$(go env GOPATH)/bin/."
     rm -rf "$(go env GOPATH)/bin/linters/"
+
+    echo "installing GolangCI-Lint ${GOLANGCI_LINT_VERSION}"
+    curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b "$(go env GOPATH)/bin" "v${GOLANGCI_LINT_VERSION}"
 
     echo "installing gocovmerge"
 
