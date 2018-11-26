@@ -91,6 +91,13 @@ func main() {
 		})
 	}
 
+	for idx, constraint := range gopkg.Constraint {
+		if constraint.Name == name {
+			gopkg.Constraint = append(gopkg.Constraint[:idx], gopkg.Constraint[idx+1:]...)
+			break
+		}
+	}
+
 	f, err := os.OpenFile(gopkgFile, os.O_RDWR|os.O_TRUNC, 0644)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)
@@ -106,9 +113,10 @@ func main() {
 }
 
 type Gopkg struct {
-	Required []string   `toml:"required"`
-	Ignored  []string   `toml:"ignored"`
-	Override []Override `toml:"override"`
+	Required   []string   `toml:"required"`
+	Ignored    []string   `toml:"ignored"`
+	Constraint []Override `toml:"constraint"`
+	Override   []Override `toml:"override"`
 }
 
 type Override struct {
