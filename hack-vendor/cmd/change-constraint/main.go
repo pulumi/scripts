@@ -97,6 +97,9 @@ func main() {
 			break
 		}
 	}
+	if len(gopkg.Constraint) == 0 {
+		gopkg.Constraint = nil
+	}
 
 	f, err := os.OpenFile(gopkgFile, os.O_RDWR|os.O_TRUNC, 0644)
 	if err != nil {
