@@ -20,13 +20,14 @@ import (
 )
 
 type gopkgConstraint struct {
-	Name               string `toml:"name"`
-	Branch             string `toml:"branch"`
-	Revision           string `toml:"revision"`
-	Version            string `toml:"version"`
-	Source             string `toml:"source"`
-	GovendorOverride   bool
-	GovendorOverridden bool
+	Name                  string `toml:"name"`
+	Branch                string `toml:"branch"`
+	Revision              string `toml:"revision"`
+	Version               string `toml:"version"`
+	Source                string `toml:"source"`
+	GovendorOverride      bool
+	GovendorOverridden    bool
+	GovendorExcludePrefix []string
 }
 
 // govendorFile is a complete vendor/vendor.json file.  See https://github.com/kardianos/vendor-spec for details.
@@ -119,9 +120,38 @@ func decodeConstraint(tree *toml.Tree) (gopkgConstraint, error) {
 
 	if metadata, ok := tree.Get("metadata").(*toml.Tree); ok {
 		constraint.GovendorOverride = metadata.Has("govendor-override")
-		constraint.GovendorOverridden = metadata.Has("govendor-overriden")
+		// There was a bug in an older version of this govendor-override that misspelled overridden - check for
+		// that for a while until any produces files are likely out of use.
+		constraint.GovendorOverridden = metadata.Has("govendor-overridden") || metadata.Has("govendor-overriden")
+
+		if metadata.Has("govendor-exclude-prefixes") {
+			toExclude, err := interfaceToStringArray(metadata.Get("govendor-exclude-prefixes"))
+			if err != nil {
+				return gopkgConstraint{}, err
+			}
+
+			constraint.GovendorExcludePrefix = toExclude
+		}
 	}
 	return constraint, nil
+}
+
+// Convert an interface{} (as provided by the TOML library) to a []string
+func interfaceToStringArray(input interface{}) ([]string, error) {
+	interfaceArray, ok := input.([]interface{})
+	if !ok {
+		return nil, errors.New("expected a string array")
+	}
+
+	var stringArray []string
+	for _, item := range interfaceArray {
+		if stringItem, ok := item.(string); ok {
+			stringArray = append(stringArray, stringItem)
+		} else {
+			return nil, errors.New("expected a string array")
+		}
+	}
+	return stringArray, nil
 }
 
 func main() {
@@ -170,8 +200,22 @@ func main() {
 	// that there are contradictions, we will issue a warning, but generally choose the latest.
 	var projects []gps.ProjectRoot
 	versions := make(map[gps.ProjectRoot]govendorPackage)
-	for _, gov := range govendorFiles {
+	for i, gov := range govendorFiles {
+		// This is not ideal but avoids restructuring for now - look up the inject metadata by parallel array index
+		ignored := inject[i].GovendorExcludePrefix
+
 		for _, pkg := range gov.Package {
+			ignoreThisPackage := false
+			for _, ignore := range ignored {
+				if strings.HasPrefix(pkg.Path, ignore) {
+					ignoreThisPackage = true
+				}
+			}
+			if ignoreThisPackage {
+				fmt.Fprintf(os.Stderr, "info: ignoring package %s\n", pkg.Path)
+				continue
+			}
+
 			proj, err := sm.DeduceProjectRoot(pkg.Path)
 			if err != nil {
 				log.Fatalf("error deducing project root from path %s: %v", pkg.Path, err)
@@ -243,7 +287,7 @@ func main() {
 				fmt.Printf("  revision = \"%s\"\n", v.Revision)
 			}
 			fmt.Printf("  [override.metadata]\n")
-			fmt.Printf("    govendor-overriden=true\n")
+			fmt.Printf("    govendor-overridden=true\n")
 		}
 	}
 }
