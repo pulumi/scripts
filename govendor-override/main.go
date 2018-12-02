@@ -247,7 +247,7 @@ func main() {
 	// Finally, scrape old injected overrides from the Gopkg.toml, then write the tree, sort the deps, and inject new
 	// overrides.
 	if overrides, ok := gopkgTree.Get("override").([]*toml.Tree); ok {
-		newOverrides := make([]*toml.Tree, len(overrides))
+		newOverrides := make([]*toml.Tree, 0, len(overrides))
 		for _, raw := range overrides {
 			c, err := decodeConstraint(raw)
 			if err != nil {
