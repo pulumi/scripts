@@ -9,7 +9,7 @@ nvm install ${NODE_VERSION-v8.11.1}
     [ -e "$(go env GOPATH)/bin" ] || mkdir -p "$(go env GOPATH)/bin"
 
     YARN_VERSION="1.3.2"
-    DEP_VERSION="0.4.1"
+    DEP_VERSION="0.5.0"
     GOMETALINTER_VERSION="2.0.3"
     GOLANGCI_LINT_VERSION="1.12"
     PIP_VERSION="10.0.0"
