@@ -281,7 +281,7 @@ func main() {
 				if v.Version == "master" {
 					fmt.Printf("  branch = \"%s\"\n", v.Version)
 				} else {
-					fmt.Printf("  version = \"%s\"\n", v.Version)
+					fmt.Printf("  version = \"=%s\"\n", v.Version)
 				}
 			} else {
 				fmt.Printf("  revision = \"%s\"\n", v.Revision)
