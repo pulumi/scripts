@@ -1,8 +1,29 @@
 #!/bin/bash
 set -o nounset -o errexit -o pipefail
 
+# We've seen cases where `make ensure` fails due to upstream
+# issues (often during a dep ensure when hitting go.googlesource.com)
+#
+# Instead of failing the job right away, try a few times (after pausing).
+try_make_ensure() {
+    local count=0
+    local limit=5
+
+    while [ "${count}" -lt "${limit}" ]; do
+        if make ensure; then
+            return 0;
+        else
+            echo "make ensure failed"
+            sleep 10
+            count=$((${count} + 1))
+        fi
+    done
+
+    return 1
+}
+
 # Run our target to dep ensure and yarn install everything
-make ensure
+try_make_ensure
 
 # Ensure the working tree is clean (make ensure may have updated lock files)
 $(go env GOPATH)/src/github.com/pulumi/scripts/ci/check-worktree-is-clean.sh
