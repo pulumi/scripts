@@ -18,6 +18,7 @@ nvm install ${NODE_VERSION-v8.11.1}
     AWSCLI_VERSION="1.14.30"
     WHEEL_VERSION="0.30.0"
     TWINE_VERSION="1.9.1"
+    TF2PULUMI_VERSION="0.4.1"
 
     OS=""
     case $(uname) in
@@ -86,6 +87,9 @@ nvm install ${NODE_VERSION-v8.11.1}
     else
         brew install pandoc
     fi
+
+    echo "installing Terraform-to-Pulumi conversion tool"
+    curl -L "https://github.com/pulumi/tf2pulumi/releases/download/v${TF2PULUMI_VERSION}/tf2pulumi-v${TF2PULUMI_VERSION}-${OS}-x64.tar.gz" | tar -xv -C "$(go env GOPATH)/bin"
 )
 
 # If the sub shell failed, bail out now.
