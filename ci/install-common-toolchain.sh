@@ -88,8 +88,9 @@ nvm install ${NODE_VERSION-v8.11.1}
         brew install pandoc
     fi
 
-    echo "installing Terraform-to-Pulumi conversion tool (${TF2PULUMI_VERSION}-${OS})"
-    curl -L "https://github.com/pulumi/tf2pulumi/releases/download/v${TF2PULUMI_VERSION}/tf2pulumi-v${TF2PULUMI_VERSION}-${OS}-x64.tar.gz" | tar -xvz -C "$(go env GOPATH)/bin"
+    # TODO[pulumi/terraform#298]: reenable once we're ready to generate examples from TF docs.
+    # echo "installing Terraform-to-Pulumi conversion tool (${TF2PULUMI_VERSION}-${OS})"
+    # curl -L "https://github.com/pulumi/tf2pulumi/releases/download/v${TF2PULUMI_VERSION}/tf2pulumi-v${TF2PULUMI_VERSION}-${OS}-x64.tar.gz" | tar -xvz -C "$(go env GOPATH)/bin"
 )
 
 # If the sub shell failed, bail out now.
