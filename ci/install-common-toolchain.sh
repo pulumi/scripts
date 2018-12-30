@@ -18,7 +18,7 @@ nvm install ${NODE_VERSION-v8.11.1}
     AWSCLI_VERSION="1.14.30"
     WHEEL_VERSION="0.30.0"
     TWINE_VERSION="1.9.1"
-    TF2PULUMI_VERSION="0.4.1"
+    TF2PULUMI_VERSION="0.4.2"
 
     OS=""
     case $(uname) in
