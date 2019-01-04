@@ -13,6 +13,12 @@ fi
 SCRIPT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 SOURCE_ROOT="$1"
 
+# Before we publish, we run some validation checks over the package
+if ! "${SCRIPT_ROOT}"/check-package-dependencies "${SOURCE_ROOT}/sdk/nodejs/bin/package.json"; then
+    >&2 echo "checking package dependencies failed, refusing to publish"
+    exit 1
+fi
+
 if [[ "${TRAVIS_OS_NAME:-}" == "linux" ]]; then
     # Publish the NPM package.
     echo "Publishing NPM package to NPMjs.com:"
