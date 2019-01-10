@@ -26,9 +26,10 @@ nvm install ${NODE_VERSION-v8.11.1}
         "Darwin") OS="darwin";;
         *) echo "error: unknown host os $(uname)" ; exit 1;;
     esac
-
+   
     # jq isn't present on OSX, but we use it in some of our scripts. Install it.
     if [ "${TRAVIS_OS_NAME:-}" = "osx" ]; then
+        brew update
         brew install jq
     fi
 
