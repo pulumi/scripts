@@ -18,7 +18,7 @@ nvm install ${NODE_VERSION-v8.11.1}
     AWSCLI_VERSION="1.14.30"
     WHEEL_VERSION="0.30.0"
     TWINE_VERSION="1.9.1"
-    TF2PULUMI_VERSION="0.4.2"
+    TF2PULUMI_VERSION="0.4.3"
 
     OS=""
     case $(uname) in
@@ -26,7 +26,7 @@ nvm install ${NODE_VERSION-v8.11.1}
         "Darwin") OS="darwin";;
         *) echo "error: unknown host os $(uname)" ; exit 1;;
     esac
-   
+
     # jq isn't present on OSX, but we use it in some of our scripts. Install it.
     if [ "${TRAVIS_OS_NAME:-}" = "osx" ]; then
         brew update
@@ -89,9 +89,9 @@ nvm install ${NODE_VERSION-v8.11.1}
         brew install pandoc
     fi
 
-    # TODO[pulumi/terraform#298]: reenable once we're ready to generate examples from TF docs.
-    # echo "installing Terraform-to-Pulumi conversion tool (${TF2PULUMI_VERSION}-${OS})"
-    # curl -L "https://github.com/pulumi/tf2pulumi/releases/download/v${TF2PULUMI_VERSION}/tf2pulumi-v${TF2PULUMI_VERSION}-${OS}-x64.tar.gz" | tar -xvz -C "$(go env GOPATH)/bin"
+    echo "installing Terraform-to-Pulumi conversion tool (${TF2PULUMI_VERSION}-${OS})"
+    curl -L "https://github.com/pulumi/tf2pulumi/releases/download/v${TF2PULUMI_VERSION}/tf2pulumi-v${TF2PULUMI_VERSION}-${OS}-x64.tar.gz" | \
+			tar -xvz -C "$(go env GOPATH)/bin"
 )
 
 # If the sub shell failed, bail out now.
