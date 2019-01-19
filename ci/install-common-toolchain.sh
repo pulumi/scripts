@@ -28,7 +28,7 @@ nvm install ${NODE_VERSION-v8.11.1}
     esac
 
     # jq isn't present on OSX, but we use it in some of our scripts. Install it.
-    if [ "${TRAVIS_OS_NAME:-}" = "osx" ]; then
+    if [ "${OS}" = "darwin" ]; then
         brew update
         brew install jq
     fi
@@ -78,7 +78,7 @@ nvm install ${NODE_VERSION-v8.11.1}
     pip install --user "wheel==${WHEEL_VERSION}" "twine==${TWINE_VERSION}"
 
     echo "installing pandoc, so we can generate README.rst for Python packages"
-    if [ "${TRAVIS_OS_NAME:-}" = "linux" ]; then
+    if [ "${OS}" = "linux" ]; then
         # We've seen cases in Travuis where `apt-get update` fails because
         # some sources couldn't be refreshed. Instead of failing the entire
         # operation eagerly, allow this command to fail. If we don't refresh
@@ -100,7 +100,7 @@ nvm install ${NODE_VERSION-v8.11.1}
 # By default some tools are not on the PATH, let's fix that
 
 # On OSX, the location that pip installs helper scripts to isn't on the path
-if [ "${TRAVIS_OS_NAME:-}" = "osx" ]; then
+if [ "${OS}" = "darwin" ]; then
     export PATH=$PATH:$HOME/Library/Python/2.7/bin
 fi
 
