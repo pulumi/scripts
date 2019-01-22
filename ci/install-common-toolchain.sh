@@ -4,6 +4,17 @@ nvm install ${NODE_VERSION-v8.11.1}
 # outer shell, so we don't want to set options like nounset because
 # they would be set in the outer shell as well, so do as much logic as
 # we can in a subshell.
+#
+# We do need "OS" to be set in the parent shell, though, since we
+# inspect it at the end of the script in order to determine whether or
+# not to munge the PATH to include Python executables.
+export OS=""
+case $(uname) in
+    "Linux") OS="linux";;
+    "Darwin") OS="darwin";;
+    *) echo "error: unknown host os $(uname)" ; exit 1;;
+esac
+
 (
     set -o nounset -o errexit -o pipefail
     [ -e "$(go env GOPATH)/bin" ] || mkdir -p "$(go env GOPATH)/bin"
@@ -19,13 +30,6 @@ nvm install ${NODE_VERSION-v8.11.1}
     WHEEL_VERSION="0.30.0"
     TWINE_VERSION="1.9.1"
     TF2PULUMI_VERSION="0.4.3"
-
-    OS=""
-    case $(uname) in
-        "Linux") OS="linux";;
-        "Darwin") OS="darwin";;
-        *) echo "error: unknown host os $(uname)" ; exit 1;;
-    esac
 
     # jq isn't present on OSX, but we use it in some of our scripts. Install it.
     if [ "${OS}" = "darwin" ]; then
