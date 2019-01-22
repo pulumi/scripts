@@ -15,5 +15,5 @@
 vendor/
 
 # IntelliJ Project Files
-/.idea/
+.idea/
 *.iml
