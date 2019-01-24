@@ -8,12 +8,15 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
 	"github.com/golang/dep"
 	"github.com/golang/dep/gps"
 	"github.com/pkg/errors"
+	"gopkg.in/src-d/go-git.v4"
+	"gopkg.in/src-d/go-git.v4/plumbing/object"
 
 	"github.com/pulumi/scripts/gomod-override/modfile"
 	"github.com/pulumi/scripts/gomod-override/module"
@@ -57,10 +60,20 @@ func buildGopkgConstraint(req module.Version) (gopkgConstraint, error) {
 			return gopkgConstraint{}, fmt.Errorf("unexpected prerelease format: %q", prerelease)
 		}
 
+		sha := versionComponents[2]
+		if len(sha) < 40 {
+			// Resolve the abbreviated SHA via `go get`
+			var err error
+			sha, err = resolveAbbreviatedSHA(req.Path, sha)
+			if err != nil {
+				return gopkgConstraint{}, errors.Wrap(err, "error resolving abbreviated SHA")
+			}
+		}
+
 		// Return the SHA
 		return gopkgConstraint{
 			Name:     req.Path,
-			Revision: versionComponents[2],
+			Revision: sha,
 		}, nil
 	}
 
@@ -177,4 +190,59 @@ func fetchGoModData(sm gps.SourceManager, constraint gopkgConstraint) ([]byte, e
 	}
 
 	return gomodData, nil
+}
+
+func resolveAbbreviatedSHA(importPath, revision string) (string, error) {
+	tempGoPath, err := ioutil.TempDir("", "gomod-override")
+	if err != nil {
+		return "", err
+	}
+	defer func() {
+		_ = os.RemoveAll(tempGoPath)
+	}()
+
+	log.Printf("Running go get -u -d %s in temporary GOPATH: %s", importPath, tempGoPath)
+	goGetCmd := exec.Command("go", "get", "-u", "-d", importPath)
+
+	env := os.Environ()
+	for i, key := range env {
+		if strings.HasPrefix(key, "GOPATH=") {
+			env = append(env[:i], env[i+1:]...)
+		}
+	}
+	env = append(env, fmt.Sprintf("GOPATH=%s", tempGoPath))
+	goGetCmd.Env = env
+
+	output, err := goGetCmd.CombinedOutput()
+	if err != nil {
+		if !strings.Contains(string(output), fmt.Sprintf("no Go files in %s", tempGoPath)) {
+			return "", fmt.Errorf("cannot go get %s:\n%s\n", importPath, string(output))
+		}
+	}
+
+	repo, err := git.PlainOpen(filepath.Join(tempGoPath, "src", importPath))
+	if err != nil {
+		return "", err
+	}
+
+	commitIter, err := repo.CommitObjects()
+	if err != nil {
+		return "", err
+	}
+
+	var desiredCommit *object.Commit
+	err = commitIter.ForEach(func(commit *object.Commit) error {
+		if strings.HasPrefix(commit.Hash.String(), revision) {
+			desiredCommit = commit
+		}
+		return nil
+	})
+
+	if desiredCommit == nil {
+		return "", fmt.Errorf("no commit maches prefix %s", revision)
+	}
+
+	log.Printf("Expanded commit SHA %s to %s", revision, desiredCommit.Hash.String())
+
+	return desiredCommit.Hash.String(), nil
 }
