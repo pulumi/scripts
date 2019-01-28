@@ -19,17 +19,17 @@ esac
     set -o nounset -o errexit -o pipefail
     [ -e "$(go env GOPATH)/bin" ] || mkdir -p "$(go env GOPATH)/bin"
 
-    YARN_VERSION="1.3.2"
-    DEP_VERSION="0.5.0"
-    GOMETALINTER_VERSION="2.0.3"
-    GOLANGCI_LINT_VERSION="1.12"
-    PIP_VERSION="10.0.0"
-    VIRTUALENV_VERSION="15.2.0"
-    PIPENV_VERSION="2018.10.13"
-    AWSCLI_VERSION="1.14.30"
-    WHEEL_VERSION="0.30.0"
-    TWINE_VERSION="1.9.1"
-    TF2PULUMI_VERSION="0.4.3"
+    YARN_VERSION="${YARN_VERSION:-1.13.0}"
+    DEP_VERSION="${DEP_VERSION:-0.5.0}"
+    GOMETALINTER_VERSION="${GOMETALINTER_VERSION:-2.0.3}"
+    GOLANGCI_LINT_VERSION="${GOLANGCI_LINT_VERSION:-1.12}"
+    PIP_VERSION="${PIP_VERSION:-10.0.0}"
+    VIRTUALENV_VERSION="${VIRTUALENV_VERSION:-15.2.0}"
+    PIPENV_VERSION="${PIPENV_VERSION:-2018.10.13}"
+    AWSCLI_VERSION="${AWSCLI_VERSION:-1.14.30}"
+    WHEEL_VERSION="${WHEEL_VERSION:-0.30.0}"
+    TWINE_VERSION="${TWINE_VERSION:-1.9.1}"
+    TF2PULUMI_VERSION="${PULUMI_VERSION:-0.4.3}"
 
     # jq isn't present on OSX, but we use it in some of our scripts. Install it.
     if [ "${OS}" = "darwin" ]; then
