@@ -15,7 +15,7 @@ import (
 	"github.com/golang/dep"
 	"github.com/golang/dep/gps"
 	"github.com/pkg/errors"
-	"gopkg.in/src-d/go-git.v4"
+	git "gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 
 	"github.com/pulumi/scripts/gomod-override/modfile"
@@ -56,25 +56,34 @@ func buildGopkgConstraint(req module.Version) (gopkgConstraint, error) {
 	if prerelease := semver.Prerelease(req.Version); prerelease != "" {
 		// Separate the date from the SHA
 		versionComponents := strings.Split(prerelease, "-")
-		if len(versionComponents) != 3 {
-			return gopkgConstraint{}, fmt.Errorf("unexpected prerelease format: %q", prerelease)
-		}
-
-		sha := versionComponents[2]
-		if len(sha) < 40 {
-			// Resolve the abbreviated SHA via `go get`
-			var err error
-			sha, err = resolveAbbreviatedSHA(req.Path, sha)
-			if err != nil {
-				return gopkgConstraint{}, errors.Wrap(err, "error resolving abbreviated SHA")
+		switch len(versionComponents) {
+		case 2:
+			// This is not in the Go mod exact SHA format - use the whole prerelease version
+			return gopkgConstraint{
+				Name:    req.Path,
+				Version: req.Version,
+			}, nil
+		case 3:
+			// Return the SHA for the specific version of dependency
+			sha := versionComponents[2]
+			if len(sha) < 40 {
+				// Resolve the abbreviated SHA via `go get`
+				var err error
+				sha, err = resolveAbbreviatedSHA(req.Path, sha)
+				if err != nil {
+					return gopkgConstraint{}, errors.Wrap(err, "error resolving abbreviated SHA")
+				}
 			}
-		}
 
-		// Return the SHA
-		return gopkgConstraint{
-			Name:     req.Path,
-			Revision: sha,
-		}, nil
+			// Return the SHA
+			return gopkgConstraint{
+				Name:     req.Path,
+				Revision: sha,
+			}, nil
+		default:
+			return gopkgConstraint{}, fmt.Errorf("unexpected prerelease format for %s: %q",
+				req.Path, prerelease)
+		}
 	}
 
 	// If not, we can take the version and constrain to that. If using
