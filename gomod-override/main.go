@@ -224,7 +224,8 @@ func resolveAbbreviatedSHA(importPath, revision string) (string, error) {
 
 	output, err := goGetCmd.CombinedOutput()
 	if err != nil {
-		if !strings.Contains(string(output), fmt.Sprintf("no Go files in %s", tempGoPath)) {
+		if !strings.Contains(string(output), fmt.Sprintf("no Go files in %s", tempGoPath)) &&
+			!strings.Contains(string(output), fmt.Sprintf("build constraints exclude all Go files")) {
 			return "", fmt.Errorf("cannot go get %s:\n%s\n", importPath, string(output))
 		}
 	}
