@@ -11,13 +11,14 @@ import (
 )
 
 type gopkgConstraint struct {
-	Name            string `toml:"name"`
-	Branch          string `toml:"branch"`
-	Revision        string `toml:"revision"`
-	Version         string `toml:"version"`
-	Source          string `toml:"source"`
-	GomodOverride   bool
-	GomodOverridden bool
+	Name               string `toml:"name"`
+	Branch             string `toml:"branch"`
+	Revision           string `toml:"revision"`
+	Version            string `toml:"version"`
+	Source             string `toml:"source"`
+	GomodOverride      bool
+	GomodOverridden    bool
+	GomodExcludePrefix []string
 }
 
 func readTemplate(source io.Reader) (gopkgConstraint, []byte, error) {
@@ -55,6 +56,33 @@ func decodeConstraint(tree *toml.Tree) (gopkgConstraint, error) {
 
 	if metadata, ok := tree.Get("metadata").(*toml.Tree); ok {
 		constraint.GomodOverride = metadata.Has("gomod-override")
+
+		if metadata.Has("gomod-exclude-prefixes") {
+			toExclude, err := interfaceToStringArray(metadata.Get("gomod-exclude-prefixes"))
+			if err != nil {
+				return gopkgConstraint{}, err
+			}
+
+			constraint.GomodExcludePrefix = toExclude
+		}
 	}
 	return constraint, nil
+}
+
+// Convert an interface{} (as provided by the TOML library) to a []string
+func interfaceToStringArray(input interface{}) ([]string, error) {
+	interfaceArray, ok := input.([]interface{})
+	if !ok {
+		return nil, errors.New("expected a string array")
+	}
+
+	var stringArray []string
+	for _, item := range interfaceArray {
+		if stringItem, ok := item.(string); ok {
+			stringArray = append(stringArray, stringItem)
+		} else {
+			return nil, errors.New("expected a string array")
+		}
+	}
+	return stringArray, nil
 }

@@ -42,7 +42,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	overrides, err := readGoMod(bytes.NewReader(gomodData))
+	overrides, err := readGoMod(bytes.NewReader(gomodData), toOverride.GomodExcludePrefix)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -94,7 +94,7 @@ func buildGopkgConstraint(req module.Version) (gopkgConstraint, error) {
 	}, nil
 }
 
-func readGoMod(reader io.Reader) ([]gopkgConstraint, error) {
+func readGoMod(reader io.Reader, ignoreList []string) ([]gopkgConstraint, error) {
 	modFileData, err := ioutil.ReadAll(reader)
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot read go.mod data")
@@ -114,7 +114,18 @@ func readGoMod(reader io.Reader) ([]gopkgConstraint, error) {
 			return nil, errors.Wrap(err, "cannot build override from module information")
 		}
 
-		overrides = append(overrides, override)
+		shouldIgnore := false
+		for _, toIgnore := range ignoreList {
+			if strings.HasPrefix(override.Name, toIgnore) {
+				shouldIgnore = true
+			}
+		}
+
+		if shouldIgnore {
+			log.Printf("Ignoring module because of gomod-exclude-prefixes: %s", override.Name)
+		} else {
+			overrides = append(overrides, override)
+		}
 	}
 
 	return overrides, nil
