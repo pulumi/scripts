@@ -213,13 +213,17 @@ func fetchGoModData(sm gps.SourceManager, constraint gopkgConstraint) ([]byte, e
 }
 
 func resolveAbbreviatedSHA(importPath, revision string) (string, error) {
-	tempGoPath, err := ioutil.TempDir("", "gomod-override")
-	if err != nil {
-		return "", err
+	tempGoPath := os.Getenv("GOMOD_OVERRIDE_GOPATH")
+
+	if tempGoPath == "" {
+		tempGoPath, err := ioutil.TempDir("", "gomod-override")
+		if err != nil {
+			return "", err
+		}
+		defer func() {
+			_ = os.RemoveAll(tempGoPath)
+		}()
 	}
-	defer func() {
-		_ = os.RemoveAll(tempGoPath)
-	}()
 
 	log.Printf("Running go get -u -d %s in temporary GOPATH: %s", importPath, tempGoPath)
 	goGetCmd := exec.Command("go", "get", "-u", "-d", importPath)
