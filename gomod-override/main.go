@@ -15,7 +15,7 @@ import (
 	"github.com/golang/dep"
 	"github.com/golang/dep/gps"
 	"github.com/pkg/errors"
-	git "gopkg.in/src-d/go-git.v4"
+	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 
 	"github.com/pulumi/scripts/gomod-override/modfile"
@@ -42,7 +42,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	overrides, err := readGoMod(bytes.NewReader(gomodData), toOverride.GomodExcludePrefix)
+	overrides, err := readGoMod(bytes.NewReader(gomodData))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -56,34 +56,25 @@ func buildGopkgConstraint(req module.Version) (gopkgConstraint, error) {
 	if prerelease := semver.Prerelease(req.Version); prerelease != "" {
 		// Separate the date from the SHA
 		versionComponents := strings.Split(prerelease, "-")
-		switch len(versionComponents) {
-		case 2:
-			// This is not in the Go mod exact SHA format - use the whole prerelease version
-			return gopkgConstraint{
-				Name:    req.Path,
-				Version: req.Version,
-			}, nil
-		case 3:
-			// Return the SHA for the specific version of dependency
-			sha := versionComponents[2]
-			if len(sha) < 40 {
-				// Resolve the abbreviated SHA via `go get`
-				var err error
-				sha, err = resolveAbbreviatedSHA(req.Path, sha)
-				if err != nil {
-					return gopkgConstraint{}, errors.Wrap(err, "error resolving abbreviated SHA")
-				}
-			}
-
-			// Return the SHA
-			return gopkgConstraint{
-				Name:     req.Path,
-				Revision: sha,
-			}, nil
-		default:
-			return gopkgConstraint{}, fmt.Errorf("unexpected prerelease format for %s: %q",
-				req.Path, prerelease)
+		if len(versionComponents) != 3 {
+			return gopkgConstraint{}, fmt.Errorf("unexpected prerelease format: %q", prerelease)
 		}
+
+		sha := versionComponents[2]
+		if len(sha) < 40 {
+			// Resolve the abbreviated SHA via `go get`
+			var err error
+			sha, err = resolveAbbreviatedSHA(req.Path, sha)
+			if err != nil {
+				return gopkgConstraint{}, errors.Wrap(err, "error resolving abbreviated SHA")
+			}
+		}
+
+		// Return the SHA
+		return gopkgConstraint{
+			Name:     req.Path,
+			Revision: sha,
+		}, nil
 	}
 
 	// If not, we can take the version and constrain to that. If using
@@ -94,7 +85,7 @@ func buildGopkgConstraint(req module.Version) (gopkgConstraint, error) {
 	}, nil
 }
 
-func readGoMod(reader io.Reader, ignoreList []string) ([]gopkgConstraint, error) {
+func readGoMod(reader io.Reader) ([]gopkgConstraint, error) {
 	modFileData, err := ioutil.ReadAll(reader)
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot read go.mod data")
@@ -114,18 +105,7 @@ func readGoMod(reader io.Reader, ignoreList []string) ([]gopkgConstraint, error)
 			return nil, errors.Wrap(err, "cannot build override from module information")
 		}
 
-		shouldIgnore := false
-		for _, toIgnore := range ignoreList {
-			if strings.HasPrefix(override.Name, toIgnore) {
-				shouldIgnore = true
-			}
-		}
-
-		if shouldIgnore {
-			log.Printf("Ignoring module because of gomod-exclude-prefixes: %s", override.Name)
-		} else {
-			overrides = append(overrides, override)
-		}
+		overrides = append(overrides, override)
 	}
 
 	return overrides, nil
@@ -213,17 +193,13 @@ func fetchGoModData(sm gps.SourceManager, constraint gopkgConstraint) ([]byte, e
 }
 
 func resolveAbbreviatedSHA(importPath, revision string) (string, error) {
-	tempGoPath := os.Getenv("GOMOD_OVERRIDE_GOPATH")
-
-	if tempGoPath == "" {
-		tempGoPath, err := ioutil.TempDir("", "gomod-override")
-		if err != nil {
-			return "", err
-		}
-		defer func() {
-			_ = os.RemoveAll(tempGoPath)
-		}()
+	tempGoPath, err := ioutil.TempDir("", "gomod-override")
+	if err != nil {
+		return "", err
 	}
+	defer func() {
+		_ = os.RemoveAll(tempGoPath)
+	}()
 
 	log.Printf("Running go get -u -d %s in temporary GOPATH: %s", importPath, tempGoPath)
 	goGetCmd := exec.Command("go", "get", "-u", "-d", importPath)
@@ -239,8 +215,7 @@ func resolveAbbreviatedSHA(importPath, revision string) (string, error) {
 
 	output, err := goGetCmd.CombinedOutput()
 	if err != nil {
-		if !strings.Contains(string(output), fmt.Sprintf("no Go files in %s", tempGoPath)) &&
-			!strings.Contains(string(output), fmt.Sprintf("build constraints exclude all Go files")) {
+		if !strings.Contains(string(output), fmt.Sprintf("no Go files in %s", tempGoPath)) {
 			return "", fmt.Errorf("cannot go get %s:\n%s\n", importPath, string(output))
 		}
 	}
