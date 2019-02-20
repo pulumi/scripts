@@ -30,6 +30,7 @@ esac
     WHEEL_VERSION="${WHEEL_VERSION:-0.30.0}"
     TWINE_VERSION="${TWINE_VERSION:-1.9.1}"
     TF2PULUMI_VERSION="${PULUMI_VERSION:-0.4.7}"
+    PANDOC_VERSION="${PANDOC_VERSION:-2.6}"
 
     # jq isn't present on OSX, but we use it in some of our scripts. Install it.
     if [ "${OS}" = "darwin" ]; then
@@ -83,13 +84,11 @@ esac
 
     echo "installing pandoc, so we can generate README.rst for Python packages"
     if [ "${OS}" = "linux" ]; then
-        # We've seen cases in Travuis where `apt-get update` fails because
-        # some sources couldn't be refreshed. Instead of failing the entire
-        # operation eagerly, allow this command to fail. If we don't refresh
-        # enough sources to install software later, we'll blow up then.
-        sudo apt-get update || true
-        sudo apt-get install pandoc
+        curl -sfL -o /tmp/pandoc.deb "https://github.com/jgm/pandoc/releases/download/${PANDOC_VERSION}/pandoc-${PANDOC_VERSION}-1-amd64.deb"
+        sudo apt-get install /tmp/pandoc.deb
     else
+        # This is currently version 2.6 - we'll likely want to track the version
+				# in brew pretty closely in CI, as it's a pain to install otherwise.
         brew install pandoc
     fi
 
