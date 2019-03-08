@@ -137,6 +137,14 @@
   version = "v0.8.1"
 
 [[projects]]
+  digest = "1:d367886e3a8134415fad58fb2ac44e2f38aa88068adca7a02d59a555f87085c0"
+  name = "github.com/rogpeppe/go-internal"
+  packages = ["semver"]
+  pruneopts = ""
+  revision = "1cf9852c553c5b7da2d5a4a091129a7822fed0c9"
+  version = "v1.2.2"
+
+[[projects]]
   branch = "master"
   digest = "1:78c40a73ec84ec6be7665f27464ad8c85248174ce14322335f2f1b5c9a2361dc"
   name = "github.com/sdboyer/constext"
@@ -319,8 +327,9 @@
     "github.com/golang/dep/gps",
     "github.com/pelletier/go-toml",
     "github.com/pkg/errors",
+    "github.com/rogpeppe/go-internal/semver",
     "gopkg.in/src-d/go-git.v4",
-    "gopkg.in/src-d/go-git.v4/plumbing",
+    "gopkg.in/src-d/go-git.v4/plumbing/object",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
