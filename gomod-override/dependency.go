@@ -77,8 +77,13 @@ func (dep dependency) resolveAbbreviatedSHA(revision string) (string, error) {
 		}()
 	}
 
-	log.Printf("Running go get -u -d %s in temporary GOPATH: %s", dep.Path, tempGoPath)
-	goGetCmd := exec.Command("go", "get", "-u", "-d", dep.Path)
+	args := []string{"get", "-u", "-d", dep.Path}
+	if os.Getenv("GOMOD_OVERRIDE_ALLOW_INSECURE") != "" {
+		args = append(args[:2], append([]string{"-insecure"}, args[2:]...)...)
+	}
+
+	log.Printf("Running go %s in temporary GOPATH: %s", strings.Join(args, " "), tempGoPath)
+	goGetCmd := exec.Command("go", args...)
 
 	env := os.Environ()
 	for i, key := range env {
