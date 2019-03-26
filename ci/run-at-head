@@ -21,11 +21,25 @@ ALL_PACKAGES=(
     "@pulumi/vsphere"
 )
 
+ALL_PYTHON_PACKAGES=(
+    "pulumi_aws"
+    "pulumi_azure"
+    "pulumi_cloudflare"
+    "pulumi_f5bigip"
+    "pulumi_gcp"
+    "pulumi_kubernetes"
+    "pulumi_openstack"
+    "pulumi_random"
+    "pulumi_vsphere"
+)
+
 echo "Installing latest Pulumi CLI"
 curl -sSL https://get.pulumi.com | bash -s -- --version "$(curl -sSL "http://registry.npmjs.org/-/package/@pulumi/pulumi/dist-tags" | jq -r .dev)"
 
-OVERRIDES="";
+NODE_OVERRIDES="";
+PYTHON_OVERRIDES="";
 
+echo "Processing Node packages"
 for PACKAGE in "${ALL_PACKAGES[@]}"; do
     echo -n "Determining latest version of ${PACKAGE}..."
     DEV_VERSION="$(curl -sSL "http://registry.npmjs.org/-/package/${PACKAGE}/dist-tags" | jq -r .dev)"
@@ -34,9 +48,22 @@ for PACKAGE in "${ALL_PACKAGES[@]}"; do
         echo "could not compute latest version of ${PACKAGE}, is it missing a dev tag in NPM?"
     else
         echo "${DEV_VERSION}"
-        OVERRIDES="${OVERRIDES}:${PACKAGE}=${DEV_VERSION}"        
+        NODE_OVERRIDES="${NODE_OVERRIDES}:${PACKAGE}=${DEV_VERSION}"        
     fi
 done
 
-export PULUMI_TEST_NODE_OVERRIDES="${OVERRIDES:1}"
+echo "Processing Python packages"
+for PACKAGE in "${ALL_PYTHON_PACKAGES[@]}"; do
+    echo -n "Determining latest version of ${PACKAGE}..."
+    DEV_VERSION="$(curl -sSL https://pypi.org/pypi/${PACKAGE}/json | jq -r '.releases | to_entries | reverse | .[0].key')" 
+    if [ "${DEV_VERSION}" = "null" ]; then
+        echo "could not compute latest version of ${PACKAGE}"
+    else
+        echo "${DEV_VERSION}"
+        PYTHON_OVERRIDES="${PYTHON_OVERRIDES}:${PACKAGE}=${DEV_VERSION}"        
+    fi
+done
+
+export PULUMI_TEST_NODE_OVERRIDES="${NODE_OVERRIDES:1}"
+export PULUMI_TEST_PYTHON_OVERRIDES="${PYTHON_OVERRIDES:1}"
 make "travis_${TRAVIS_EVENT_TYPE}"
