@@ -80,11 +80,16 @@ func main() {
 			os.Exit(1)
 		}
 
-		src := filepath.Join(moduleDirectory, "website")
-		dest := filepath.Join("vendor", s[1], "website")
+		src := moduleDirectory
+		dest := filepath.Join("vendor", s[1])
+
+		if err := os.RemoveAll(dest); err != nil {
+			fmt.Fprintf(os.Stderr, "error removing the target directory %q: %s\n", dest, err)
+			os.Exit(1)
+		}
 
 		if err := copyDir(src, dest); err != nil {
-			fmt.Fprintf(os.Stderr, "error copying website/ directory: %s\n", err)
+			fmt.Fprintf(os.Stderr, "error copying provider directory: %s\n", err)
 			os.Exit(1)
 		}
 	}
