@@ -95,6 +95,9 @@ esac
     echo "installing Terraform-to-Pulumi conversion tool (${TF2PULUMI_VERSION}-${OS})"
     curl -L "https://github.com/pulumi/tf2pulumi/releases/download/v${TF2PULUMI_VERSION}/tf2pulumi-v${TF2PULUMI_VERSION}-${OS}-x64.tar.gz" | \
 			tar -xvz -C "$(go env GOPATH)/bin"
+
+    echo "installing gomod-doccopy"
+    go get -v github.com/pulumi/scripts/gomod-doccopy
 )
 
 # If the sub shell failed, bail out now.
