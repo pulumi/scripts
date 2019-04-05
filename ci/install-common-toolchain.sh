@@ -21,7 +21,6 @@ esac
 
     YARN_VERSION="${YARN_VERSION:-1.13.0}"
     DEP_VERSION="${DEP_VERSION:-0.5.0}"
-    GOMETALINTER_VERSION="${GOMETALINTER_VERSION:-2.0.3}"
     GOLANGCI_LINT_VERSION="${GOLANGCI_LINT_VERSION:-1.16.0}"
     PIP_VERSION="${PIP_VERSION:-10.0.0}"
     VIRTUALENV_VERSION="${VIRTUALENV_VERSION:-15.2.0}"
@@ -44,17 +43,6 @@ esac
     echo "installing dep ${DEP_VERSION}"
     curl -L -o "$(go env GOPATH)/bin/dep" https://github.com/golang/dep/releases/download/v${DEP_VERSION}/dep-${OS}-amd64
     chmod +x "$(go env GOPATH)/bin/dep"
-
-    echo "installing Gometalinter ${GOMETALINTER_VERSION}"
-    curl -L "https://github.com/alecthomas/gometalinter/releases/download/v${GOMETALINTER_VERSION}/gometalinter-v${GOMETALINTER_VERSION}-${OS}-amd64.tar.bz2" | tar -jxv --strip-components=1 -C "$(go env GOPATH)/bin"
-
-    chmod +x "$(go env GOPATH)/bin/gometalinter"
-    chmod +x "$(go env GOPATH)/bin/linters/"*
-
-    # Gometalinter looks for linters on the $PATH, so let's move them out
-    # of the linters folder and into GOBIN (which we know is on the $PATH)
-    mv "$(go env GOPATH)/bin/linters/"* "$(go env GOPATH)/bin/."
-    rm -rf "$(go env GOPATH)/bin/linters/"
 
     echo "installing GolangCI-Lint ${GOLANGCI_LINT_VERSION}"
     curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b "$(go env GOPATH)/bin" "v${GOLANGCI_LINT_VERSION}"
