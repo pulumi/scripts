@@ -15,11 +15,17 @@ import (
 )
 
 var (
-	flags             = flag.NewFlagSet("gomod-doccopy", flag.ExitOnError)
-	providerSourceOrg = flags.String("src-org", "terraform-providers", "source provider GitHub org")
-	providerDestOrg   = flags.String("dest-org", "terraform-providers", "source provider GitHub org")
-	providerName      = flags.String("provider", "", "provider name")
-	verbose           = flags.Bool("v", false, "verbose output")
+	flags        = flag.NewFlagSet("gomod-doccopy", flag.ExitOnError)
+	providerOrg  = flags.String("org", "terraform-providers", "provider GitHub org")
+	providerName = flags.String("provider", "", "provider name")
+	verbose      = flags.Bool("v", false, "verbose output")
+)
+
+type moduleType string
+
+const (
+	ModuleTypeRequired moduleType = "ModuleTypeRequired"
+	ModuleTypeReplaced moduleType = "ModuleTypeReplaced"
 )
 
 func main() {
@@ -47,9 +53,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	targetProviderImportSourcePath := fmt.Sprintf("github.com/%s/%s", *providerSourceOrg, *providerName)
-	targetProviderImportDestPath := fmt.Sprintf("vendor/github.com/%s/%s", *providerDestOrg, *providerName)
-	fmt.Println(targetProviderImportSourcePath, " => ", targetProviderImportDestPath)
+	targetProviderImportPath := fmt.Sprintf("github.com/%s/%s", *providerOrg, *providerName)
+	fmt.Println(targetProviderImportPath)
 
 	// Parse/process modules.txt file of pkgs
 	f, _ := os.Open(modtxtPath)
@@ -65,14 +70,34 @@ func main() {
 		}
 		s := strings.Split(line, " ")
 
-		if s[1] != targetProviderImportSourcePath {
+		var modType moduleType
+		if len(s) == 3 {
+			modType = ModuleTypeRequired
+		} else if len(s) == 6 {
+			modType = ModuleTypeReplaced
+		} else {
+			fmt.Fprintf(os.Stderr, "unable to determine module type from module.txt line\n\t%s", line)
+			os.Exit(1)
+		}
+		if *verbose == true {
+			log.Printf("Module Type: %s", modType)
+		}
+
+		if s[1] != targetProviderImportPath {
 			if *verbose == true {
 				log.Printf("Ignoring import path: %s", s[1])
 			}
 			continue
 		}
 
-		moduleDirectory := pkgModPath(s[1], s[2])
+		moduleDirectory := ""
+		switch modType {
+		case ModuleTypeRequired:
+			moduleDirectory = pkgModPath(s[1], s[2])
+		case ModuleTypeReplaced:
+			moduleDirectory = pkgModPath(s[4], s[5])
+		}
+
 		if *verbose == true {
 			log.Printf("Needs to copy from %s", moduleDirectory)
 		}
@@ -83,13 +108,14 @@ func main() {
 		}
 
 		src := moduleDirectory
+		dest := filepath.Join("vendor", s[1])
 
-		if err := os.RemoveAll(targetProviderImportDestPath); err != nil {
-			fmt.Fprintf(os.Stderr, "error removing the target directory %q: %s\n", targetProviderImportDestPath, err)
+		if err := os.RemoveAll(dest); err != nil {
+			fmt.Fprintf(os.Stderr, "error removing the target directory %q: %s\n", dest, err)
 			os.Exit(1)
 		}
 
-		if err := copyDir(src, targetProviderImportDestPath); err != nil {
+		if err := copyDir(src, dest); err != nil {
 			fmt.Fprintf(os.Stderr, "error copying provider directory: %s\n", err)
 			os.Exit(1)
 		}
