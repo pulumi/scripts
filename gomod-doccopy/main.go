@@ -21,6 +21,13 @@ var (
 	verbose      = flags.Bool("v", false, "verbose output")
 )
 
+type moduleType string
+
+const (
+	ModuleTypeRequired moduleType = "ModuleTypeRequired"
+	ModuleTypeReplaced moduleType = "ModuleTypeReplaced"
+)
+
 func main() {
 	flags.Parse(os.Args[1:])
 
@@ -63,6 +70,19 @@ func main() {
 		}
 		s := strings.Split(line, " ")
 
+		var modType moduleType
+		if len(s) == 3 {
+			modType = ModuleTypeRequired
+		} else if len(s) == 6 {
+			modType = ModuleTypeReplaced
+		} else {
+			fmt.Fprintf(os.Stderr, "unable to determine module type from module.txt line\n\t%s", line)
+			os.Exit(1)
+		}
+		if *verbose == true {
+			log.Printf("Module Type: %s", modType)
+		}
+
 		if s[1] != targetProviderImportPath {
 			if *verbose == true {
 				log.Printf("Ignoring import path: %s", s[1])
@@ -70,7 +90,14 @@ func main() {
 			continue
 		}
 
-		moduleDirectory := pkgModPath(s[1], s[2])
+		moduleDirectory := ""
+		switch modType {
+		case ModuleTypeRequired:
+			moduleDirectory = pkgModPath(s[1], s[2])
+		case ModuleTypeReplaced:
+			moduleDirectory = pkgModPath(s[4], s[5])
+		}
+
 		if *verbose == true {
 			log.Printf("Needs to copy from %s", moduleDirectory)
 		}
