@@ -11,13 +11,9 @@ This tool recursively copies the `website/` directory from the machine module
 cache (which represents a complete version of the repository) to the
 appropriate spot in the `vendor` directory for a given Terraform provider.
 
-If using a fork of a Terraform Provider and `replace` directive in `go.mod`, 
-specify `-src-org` as the replacement path, and if necessary, `-dest-org` as
-the original target.
-
 ## Usage
 
 ```
-gomod-doccopy -provider terraform-provider-xyz [-src-org not-terraform-providers] [-dest-org something-else] [-v]
+gomod-doccopy -provider terraform-provider-xyz [-org not-terraform-providers] [-v]
 ```
 
