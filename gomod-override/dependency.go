@@ -40,6 +40,13 @@ func (dep dependency) ToGoPkgConstraint() (gopkgConstraint, error) {
 				var err error
 				sha, err = dep.resolveAbbreviatedSHA(sha)
 				if err != nil {
+					// This is likely not a Git repo, so just use the unmodified version
+					if err == git.ErrRepositoryNotExists {
+						return gopkgConstraint{
+							Name:    dep.Path,
+							Version: sha,
+						}, nil
+					}
 					return gopkgConstraint{}, errors.Wrapf(err, "error resolving abbreviated SHA for %q", dep.Path)
 				}
 			}
