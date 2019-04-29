@@ -73,7 +73,7 @@ func main() {
 		var modType moduleType
 		if len(s) == 3 {
 			modType = ModuleTypeRequired
-		} else if len(s) == 6 {
+		} else if len(s) == 5 || len(s) == 6{
 			modType = ModuleTypeReplaced
 		} else {
 			fmt.Fprintf(os.Stderr, "unable to determine module type from module.txt line\n\t%s", line)
