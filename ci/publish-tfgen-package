@@ -4,6 +4,10 @@
 # layout we use for our terraform based resource providers.
 #
 # usage publish-tfgen-package <path-to-repository-root>
+#
+# If using this to publish a hand-written package which happens to correspond to most of the
+# common tfgen layout, but does not have a python package, set NO_TFGEN_PYTHON_PACKAGE in the
+# environment to any non-empty value.
 set -o nounset -o errexit -o pipefail
 if [ "$#" -ne 1 ]; then
     >&2 echo "usage: $0 <path-to-repository-root>"
@@ -59,9 +63,13 @@ if [[ "${TRAVIS_OS_NAME:-}" == "linux" ]]; then
     mv package.json.dev package.json
     popd
 
-    # Next, publish the PyPI package.
-    echo "Publishing Pip package to pulumi.com:"
-    twine upload \
-        -u pulumi -p "${PYPI_PASSWORD}" \
-        "${SOURCE_ROOT}/sdk/python/bin/dist/*.tar.gz"
+    # Next, publish the PyPI package, if we didn't opt out
+    if [ -z "${NO_TFGEN_PYTHON_PACKAGE}" ] ; then
+        echo "Skipping publishing pip package because of NO_TFGEN_PYTHON_PACKAGE"
+    else
+        echo "Publishing Pip package to pulumi.com:"
+        twine upload \
+            -u pulumi -p "${PYPI_PASSWORD}" \
+            "${SOURCE_ROOT}/sdk/python/bin/dist/*.tar.gz"
+    fi
 fi
