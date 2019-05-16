@@ -64,7 +64,7 @@ if [[ "${TRAVIS_OS_NAME:-}" == "linux" ]]; then
     popd
 
     # Next, publish the PyPI package, if we didn't opt out
-    if [ -z "${NO_TFGEN_PYTHON_PACKAGE}" ] ; then
+    if [ -n "${NO_TFGEN_PYTHON_PACKAGE}" ] ; then
         echo "Skipping publishing pip package because of NO_TFGEN_PYTHON_PACKAGE"
     else
         echo "Publishing Pip package to pulumi.com:"
