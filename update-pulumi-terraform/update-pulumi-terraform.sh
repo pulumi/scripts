@@ -102,9 +102,9 @@ push_and_pull_request() {
 	hub pull-request \
 		--base master \
 		--head "${branchName}" \
-		--message "Update "${depName}" to ${depRef}" \
-		--message "This PR updates \\\`${depName}\\\` to ${depRef}, and re-runs code generation" \
-		--reviewer "stack72, jen20" \
+		--message "Update "${depName}" to ${depRef:0:10}" \
+		--message "This PR updates \\\`${depName}\\\` to [${depRef:0:10}](https://github.com/pulumi/${depName}/commit/${depRef}), and re-runs code generation" \
+		--reviewer "stack72,jen20" \
 		--labels "area/providers"
 	EOF
 }
@@ -153,5 +153,5 @@ do
 		commit_changes "${PROVIDER_REPO_PATH}" "Update CHANGELOG.md"
 	fi
 
-	push_and_pull_request "${PROVIDER_REPO_PATH}" "${BRANCH_NAME}" "pulumi-terraform" "${PTF_SHA:0:10}"
+	push_and_pull_request "${PROVIDER_REPO_PATH}" "${BRANCH_NAME}" "pulumi-terraform" "${PTF_SHA}"
 done
