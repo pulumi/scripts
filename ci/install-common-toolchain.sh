@@ -15,6 +15,12 @@ case $(uname) in
     *) echo "error: unknown host os $(uname)" ; exit 1;;
 esac
 
+# We're going to use pip3 to install some tools, and the location
+# they are installed to is not on the $PATH by default on OSX Travis
+if [ "${OS}" = "darwin" ]; then
+    export PATH=$HOME/Library/Python/3.6/bin:$PATH
+fi
+
 (
     set -o nounset -o errexit -o pipefail
     [ -e "$(go env GOPATH)/bin" ] || mkdir -p "$(go env GOPATH)/bin"
@@ -37,6 +43,11 @@ esac
         brew install jq
     fi
 
+    # On Linux Travis, System Python is 2.7.X, use `pyenv` to pick up Python 3.6.7
+    if [ "${OS}" = "linux" ]; then
+        pyenv global 3.6.7
+    fi
+
     echo "installing yarn ${YARN_VERSION}"
     curl -o- -L https://yarnpkg.com/install.sh | bash -s -- --version ${YARN_VERSION}
 
@@ -53,22 +64,14 @@ esac
     # getting HEAD is pretty safe.
     go get -v github.com/wadey/gocovmerge
 
-    echo "upgrading Pip to ${PIP_VERSION}"
-    sudo pip install --upgrade "pip>=${PIP_VERSION}"
-    pip install --user --upgrade "pip>=${PIP_VERSION}"
-
-    echo "installing virtualenv ${VIRTUALENV_VERSION}"
-    sudo pip install "virtualenv==${VIRTUALENV_VERSION}"
-    pip install --user "virtualenv==${VIRTUALENV_VERSION}"
-
     echo "installing pipenv ${PIPENV_VERSION}"
-    pip install --user "pipenv==${PIPENV_VERSION}"
+    pip3 install --user "pipenv==${PIPENV_VERSION}"
 
     echo "installing AWS cli ${AWSCLI_VERSION}"
-    pip install --user "awscli==${AWSCLI_VERSION}"
+    pip3 install --user "awscli==${AWSCLI_VERSION}"
 
     echo "installing Wheel and Twine, so we can publish Python packages"
-    pip install --user "wheel==${WHEEL_VERSION}" "twine==${TWINE_VERSION}"
+    pip3 install --user "wheel==${WHEEL_VERSION}" "twine==${TWINE_VERSION}"
 
     echo "installing pandoc, so we can generate README.rst for Python packages"
     if [ "${OS}" = "linux" ]; then
@@ -76,7 +79,7 @@ esac
         sudo apt-get install /tmp/pandoc.deb
     else
         # This is currently version 2.6 - we'll likely want to track the version
-				# in brew pretty closely in CI, as it's a pain to install otherwise.
+        # in brew pretty closely in CI, as it's a pain to install otherwise.
         brew install pandoc
     fi
 
@@ -93,10 +96,6 @@ esac
 
 # By default some tools are not on the PATH, let's fix that
 
-# On OSX, the location that pip installs helper scripts to isn't on the path
-if [ "${OS}" = "darwin" ]; then
-    export PATH=$PATH:$HOME/Library/Python/2.7/bin
-fi
-
 # Add yarn to the $PATH
 export PATH=$HOME/.yarn/bin:$PATH
+
