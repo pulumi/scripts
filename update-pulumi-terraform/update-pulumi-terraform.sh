@@ -6,7 +6,8 @@ set -o pipefail
 # Note the ordering here is designed to prevent problems hitting the "big 3"
 # providers by not doing them first.
 PROVIDERS="digitalocean packet newrelic cloudflare linode f5bigip newrelic "
-PROVIDERS+="random vsphere openstack gcp azure azuread aws gitlab"
+PROVIDERS+="gitlab mysql postgresql "
+PROVIDERS+="random vsphere openstack gcp azure azuread aws"
 
 CHANGELOG_ENTRY=
 while getopts ":m:" arg; do
