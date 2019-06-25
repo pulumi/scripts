@@ -5,7 +5,7 @@ set -o pipefail
 
 # Note the ordering here is designed to prevent problems hitting the "big 3"
 # providers by not doing them first.
- PROVIDERS="digitalocean packet newrelic cloudflare linode f5bigip newrelic "
+ PROVIDERS="digitalocean packet newrelic cloudflare linode f5bigip "
  PROVIDERS+="gitlab mysql postgresql "
  PROVIDERS+="random vsphere openstack gcp azure azuread aws"
 
@@ -102,5 +102,5 @@ do
   manage_travis_file "${PROVIDER_REPO_PATH}"
   commit_changes "${PROVIDER_REPO_PATH}" "Update .travis.yml"
 
-  push_and_pull_request "${PROVIDER_REPO_PATH}" "${BRANCH_NAME}" "scripts" "${PTF_SHA}"
+  push_and_pull_request "${PROVIDER_REPO_PATH}" "${BRANCH_NAME}" "${PS_SHA}"
 done
