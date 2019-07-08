@@ -5,7 +5,7 @@ set -o pipefail
 
 # Note the ordering here is designed to prevent problems hitting the "big 3"
 # providers by not doing them first.
-PROVIDERS="digitalocean packet newrelic cloudflare linode f5bigip newrelic "
+PROVIDERS="digitalocean packet newrelic cloudflare linode f5bigip "
 PROVIDERS+="gitlab mysql postgresql datadog dnsimple "
 PROVIDERS+="random vsphere openstack gcp azure azuread aws"
 
@@ -63,11 +63,15 @@ commit_changes() {
 	local repoPath=$1
 	local commitMessage=$2
 
-	bash <<-EOF
-	cd "${repoPath}"
+    dirtyStatus="$(cd "${repoPath}" && git status -s)"
 
-	git add .
-	git commit -a -m "${commitMessage}"
+	bash <<-EOF
+	    cd "${repoPath}"
+
+	    if [ -n "${dirtyStatus}" ] ; then
+	        git add .
+	        git commit -a -m "${commitMessage}"
+	    fi
 	EOF
 }
 
@@ -105,7 +109,7 @@ push_and_pull_request() {
 		--head "${branchName}" \
 		--message "Update "${depName}" to ${depRef:0:10}" \
 		--message "This PR updates \\\`${depName}\\\` to [${depRef:0:10}](https://github.com/pulumi/${depName}/commit/${depRef}), and re-runs code generation" \
-		--reviewer "stack72,jen20" \
+		--reviewer "jen20, stack72" \
 		--labels "area/providers"
 	EOF
 }
