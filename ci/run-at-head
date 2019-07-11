@@ -5,6 +5,7 @@ ALL_PACKAGES=(
     "@pulumi/aws"
     "@pulumi/aws-infra"
     "@pulumi/aws-serverless"
+    "@pulumi/awsx"
     "@pulumi/azure"
     "@pulumi/azure-serverless"
     "@pulumi/cloud"
