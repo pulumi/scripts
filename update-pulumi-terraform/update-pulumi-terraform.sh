@@ -6,7 +6,7 @@ set -o pipefail
 # Note the ordering here is designed to prevent problems hitting the "big 3"
 # providers by not doing them first.
 PROVIDERS="digitalocean packet newrelic cloudflare linode f5bigip "
-PROVIDERS+="gitlab mysql postgresql datadog dnsimple "
+PROVIDERS+="gitlab mysql postgresql datadog dnsimple tls "
 PROVIDERS+="random vsphere openstack gcp azure azuread aws"
 
 CHANGELOG_ENTRY=
