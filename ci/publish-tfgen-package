@@ -53,7 +53,8 @@ if [[ "${TRAVIS_OS_NAME:-}" == "linux" ]]; then
     # If the package doesn't have a pre-release tag, use the tag of latest instead of
     # dev. NPM uses this tag as the default version to add, so we want it to mean
     # the newest released version.
-    if [[ $(jq -r .version < package.json) != *-* ]]; then
+	PKG_VERSION=$(jq -r .version < package.json)
+	if [[ "${PKG_VERSION}" != *-dev* ]] && [[ "${PKG_VERSION}" != *-alpha* ]]; then
         NPM_TAG="latest"
     fi
 
