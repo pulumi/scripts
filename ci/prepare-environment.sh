@@ -20,6 +20,9 @@ export PULUMI_SCRIPTS="$(go env GOPATH)/src/github.com/pulumi/scripts"
 
     # Put static entries for Pulumi backends in /etc/hosts
     "${PULUMI_SCRIPTS}/ci/pulumi-hosts" | sudo tee -a /etc/hosts
+
+    # Multiple copies of `pipenv` can race to create `~/.local/share/virtualenvs` and when they do so one will fail and trigger a crash inside pipenv itself. To work around this issue, create this directory upfront.
+    mkdir -p "${HOME}/.local/share/virtualenvs"
 ) || exit 1  # Abort outer script if subshell fails.
 
 export PULUMI_ROOT=/opt/pulumi
