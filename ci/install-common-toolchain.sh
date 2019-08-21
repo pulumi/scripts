@@ -28,7 +28,7 @@ esac
     AWSCLI_VERSION="${AWSCLI_VERSION:-1.14.30}"
     WHEEL_VERSION="${WHEEL_VERSION:-0.30.0}"
     TWINE_VERSION="${TWINE_VERSION:-1.9.1}"
-    TF2PULUMI_VERSION="${PULUMI_VERSION:-0.5.1}"
+    TF2PULUMI_VERSION="${TF2PULUMI_VERSION:-0.5.1}"
     PANDOC_VERSION="${PANDOC_VERSION:-2.6}"
 
     # jq isn't present on OSX, but we use it in some of our scripts. Install it.
