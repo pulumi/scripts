@@ -14,16 +14,16 @@ if [ ! -e "${PACKAGE_JSON_PATH}" ]; then
     exit 1
 fi 
 
-# For stable versions of our packages, we run some additional checks to enforce
-# policy before we publish
-if [[ $(jq -r .version < "${PACKAGE_JSON_PATH}") != *-* ]]; then
-    
-    # We don't want to have stable packages depend on unstable packages, so if any dependency
-    # looks like a pre-release or is using the "dev" tag, block it.
-    if jq -e '.dependencies | to_entries | map(.value | test("-") or test("dev")) | any' < "${PACKAGE_JSON_PATH}" >/dev/null; then
-        >&2 echo "error: one or more dependencies is a pre-release version or dev tag"
-        exit 1
-    fi
-fi
+## For stable versions of our packages, we run some additional checks to enforce
+## policy before we publish
+#if [[ $(jq -r .version < "${PACKAGE_JSON_PATH}") != *-* ]]; then
+#    
+#    # We don't want to have stable packages depend on unstable packages, so if any dependency
+#    # looks like a pre-release or is using the "dev" tag, block it.
+#    if jq -e '.dependencies | to_entries | map(.value | test("-") or test("dev")) | any' < "${PACKAGE_JSON_PATH}" >/dev/null; then
+#        >&2 echo "error: one or more dependencies is a pre-release version or dev tag"
+#        exit 1
+#    fi    
+#fi
 
 exit 0
