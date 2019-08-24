@@ -74,6 +74,7 @@ if [[ "${TRAVIS_OS_NAME:-}" == "linux" ]]; then
         echo "Publishing Pip package to pulumi.com:"
         twine upload \
             -u pulumi -p "${PYPI_PASSWORD}" \
-            "${SOURCE_ROOT}/sdk/python/bin/dist/*.tar.gz"
+            "${SOURCE_ROOT}/sdk/python/bin/dist/*.tar.gz" \
+            --verbose
     fi
 fi
