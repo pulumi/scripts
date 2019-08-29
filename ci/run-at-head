@@ -2,69 +2,80 @@
 set -o nounset -o errexit -o pipefail
 
 ALL_PACKAGES=(
+    "@pulumi/alicloud"
     "@pulumi/aws"
     "@pulumi/aws-infra"
     "@pulumi/aws-serverless"
     "@pulumi/awsx"
     "@pulumi/azure"
     "@pulumi/azure-serverless"
+    "@pulumi/azuread"
     "@pulumi/cloud"
     "@pulumi/cloud-aws"
     "@pulumi/cloud-azure"
+    "@pulumi/cloudflare"
+    "@pulumi/datadog"
+    "@pulumi/digitalocean"
+    "@pulumi/dnsimple"
     "@pulumi/docker"
     "@pulumi/eks"
+    "@pulumi/f5bigip"
     "@pulumi/gcp"
+    "@pulumi/gitlab"
     "@pulumi/kubernetes"
+    "@pulumi/linode"
+    "@pulumi/mysql"
+    "@pulumi/newrelic"
     "@pulumi/openstack"
+    "@pulumi/packet"
+    "@pulumi/policy"
+    "@pulumi/postgresql"
     "@pulumi/pulumi"
+    "@pulumi/query"
     "@pulumi/random"
+    "@pulumi/terraform"
     "@pulumi/terraform-template"
+    "@pulumi/tls"
     "@pulumi/vsphere"
 )
 
-ALL_PYTHON_PACKAGES=(
-    "pulumi_aws"
-    "pulumi_azure"
-    "pulumi_cloudflare"
-    "pulumi_f5bigip"
-    "pulumi_gcp"
-    "pulumi_kubernetes"
-    "pulumi_openstack"
-    "pulumi_random"
-    "pulumi_vsphere"
-)
+USE_LATEST_CLI=true
+USE_LATEST_PACKAGES=true
 
-echo "Installing latest Pulumi CLI"
-curl -sSL https://get.pulumi.com | bash -s -- --version "$(curl -sSL "http://registry.npmjs.org/-/package/@pulumi/pulumi/dist-tags" | jq -r .dev)"
-
-NODE_OVERRIDES="";
-PYTHON_OVERRIDES="";
-
-echo "Processing Node packages"
-for PACKAGE in "${ALL_PACKAGES[@]}"; do
-    echo -n "Determining latest version of ${PACKAGE}..."
-    DEV_VERSION="$(curl -sSL "http://registry.npmjs.org/-/package/${PACKAGE}/dist-tags" | jq -r .dev)"
-
-    if [ "${DEV_VERSION}" = "null" ]; then
-        echo "could not compute latest version of ${PACKAGE}, is it missing a dev tag in NPM?"
-    else
-        echo "${DEV_VERSION}"
-        NODE_OVERRIDES="${NODE_OVERRIDES}:${PACKAGE}=${DEV_VERSION}"        
-    fi
+for ARG in "$@"
+do
+    case "${ARG}" in
+        --no-latest-cli)
+            USE_LATEST_CLI=false
+            ;;
+        --no-latest-packages)
+            USE_LATEST_PACKAGES=false
+            ;;
+    esac
 done
 
-echo "Processing Python packages"
-for PACKAGE in "${ALL_PYTHON_PACKAGES[@]}"; do
-    echo -n "Determining latest version of ${PACKAGE}..."
-    DEV_VERSION="$(curl -sSL https://pypi.org/pypi/${PACKAGE}/json | jq -r '.releases | to_entries | reverse | .[0].key')" 
-    if [ "${DEV_VERSION}" = "null" ]; then
-        echo "could not compute latest version of ${PACKAGE}"
-    else
-        echo "${DEV_VERSION}"
-        PYTHON_OVERRIDES="${PYTHON_OVERRIDES}:${PACKAGE}=${DEV_VERSION}"        
-    fi
-done
+if [ "${USE_LATEST_CLI}" = "true" ]; then
+    echo "Installing latest Pulumi CLI"
+    curl -sSL https://get.pulumi.com | bash -s -- --version "$(curl -sSL "http://registry.npmjs.org/-/package/@pulumi/pulumi/dist-tags" | jq -r .dev)"
+fi
 
-export PULUMI_TEST_NODE_OVERRIDES="${NODE_OVERRIDES:1}"
-export PULUMI_TEST_PYTHON_OVERRIDES="${PYTHON_OVERRIDES:1}"
+if [ "${USE_LATEST_PACKAGES}" = "true" ]; then
+    NODE_OVERRIDES="";
+
+    echo "Processing Node packages"
+    for PACKAGE in "${ALL_PACKAGES[@]}"; do
+        echo -n "Determining latest version of ${PACKAGE}..."
+        DEV_VERSION="$(curl -sSL "http://registry.npmjs.org/-/package/${PACKAGE}/dist-tags" | jq -r .dev)"
+
+        if [ "${DEV_VERSION}" = "null" ]; then
+            echo "could not compute latest version of ${PACKAGE}, is it missing a dev tag in NPM?"
+        else
+            echo "${DEV_VERSION}"
+            NODE_OVERRIDES="${NODE_OVERRIDES}:${PACKAGE}=${DEV_VERSION}"
+        fi
+    done
+
+    export PULUMI_TEST_NODE_OVERRIDES="${NODE_OVERRIDES:1}"
+fi
+
 make "travis_${TRAVIS_EVENT_TYPE}"
