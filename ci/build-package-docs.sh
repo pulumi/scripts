@@ -3,7 +3,6 @@
 set -o nounset
 set -o errexit
 set -o pipefail
-readonly ROOT=$(dirname "${0}")/..
 
 if [[ "${TRAVIS:-}" != "true" ]]; then
 	echo "error: this script should be run from within Travis"
