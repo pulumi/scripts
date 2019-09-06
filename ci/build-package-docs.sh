@@ -24,8 +24,8 @@ if [[ "${TRAVIS:-}" != "true" ]]; then
 fi
 
 if [[ -z "${PULUMI_BOT_GITHUB_API_TOKEN:-}" ]]; then
-	echo "error: PULUMI_BOT_GITHUB_API_TOKEN must be set"
-	exit 1
+    echo "error: PULUMI_BOT_GITHUB_API_TOKEN must be set"
+    exit 1
 fi
 
 if [[ -z "${1:-}" ]]; then
