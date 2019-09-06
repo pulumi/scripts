@@ -1,11 +1,30 @@
 #!/bin/bash
 # build-package-docs.sh updates the docs generated from the indicated repo
+#
+# Note that if PULUMI_BOT_GITHUB_API_TOKEN is unset, this script will fail. If this happens, the doc build can be run
+# manually by triggering a job using the following steps:
+# - Under "More options" in the Travis UI, choose "Trigger build"
+# - Under "Branch", enter the name of the tag for the latest release
+# - Under "Custom Config", enter the following:
+#
+#     if: branch = [TAG]
+#     script: make build install && $(go env GOPATH)/src/github.com/pulumi/scripts/ci/build-package-docs.sh [PACKAGE SIMPLE NAME]
+#     env:
+#         - TRAVIS_TAG=[TAG]
+#
+# - Finally, select "Trigger custom build". The triggered job will regenerate the docs using this script and publish
+#   the expected PR.
 set -o nounset
 set -o errexit
 set -o pipefail
 
 if [[ "${TRAVIS:-}" != "true" ]]; then
     echo "error: this script should be run from within Travis"
+    exit 1
+fi
+
+if [[ -z "${PULUMI_BOT_GITHUB_API_TOKEN:-}" ]]; then
+    echo "error: PULUMI_BOT_GITHUB_API_TOKEN must be set"
     exit 1
 fi
 
@@ -61,19 +80,12 @@ git config user.email "bot@pulumi.com"
 git add .
 git commit --allow-empty -m "${MESSAGE}"
 
-# If we have a token for pulumi-bot, push up the changes and add a status
-# to a github compare.
-if [ ! -z "${PULUMI_BOT_GITHUB_API_TOKEN:-}" ]; then
-    # Push up the resulting changes
-    git remote add pulumi-bot "https://pulumi-bot:${PULUMI_BOT_GITHUB_API_TOKEN}@github.com/pulumi-bot/docs"
-    git push pulumi-bot --set-upstream --force "${BRANCH}"
+# Push up the resulting changes
+git remote add pulumi-bot "https://pulumi-bot:${PULUMI_BOT_GITHUB_API_TOKEN}@github.com/pulumi-bot/docs"
+git push pulumi-bot --set-upstream --force "${BRANCH}"
 
-    # Create a pull request in the docs repo.
-    BODY="{\"title\": \"${MESSAGE}\", \"head\": \"pulumi-bot:${BRANCH}\", \"base\": \"master\"}"
-    curl -u "pulumi-bot:${PULUMI_BOT_GITHUB_API_TOKEN}" -X POST -H "Content-Type: application/json" -d "${BODY}" "https://api.github.com/repos/pulumi/docs/pulls"
-else
-    # Otherwise, just print out the diff to the build log.
-    git diff HEAD~1 HEAD
-fi
+# Create a pull request in the docs repo.
+BODY="{\"title\": \"${MESSAGE}\", \"head\": \"pulumi-bot:${BRANCH}\", \"base\": \"master\"}"
+curl -u "pulumi-bot:${PULUMI_BOT_GITHUB_API_TOKEN}" -X POST -H "Content-Type: application/json" -d "${BODY}" "https://api.github.com/repos/pulumi/docs/pulls"
 
 exit 0
