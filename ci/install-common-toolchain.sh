@@ -45,6 +45,7 @@ fi
 
     # On Linux Travis, System Python is 2.7.X, use `pyenv` to pick up Python 3.6.7
     if [ "${OS}" = "linux" ]; then
+        pyenv versions
         pyenv global 3.6.7
     fi
 
