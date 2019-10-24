@@ -84,6 +84,21 @@ fi
         brew install pandoc
     fi
 
+    echo "installing dotnet sdk and runtime"
+    if [ "${OS}" = "linux" ]; then
+        wget -q https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+        sudo dpkg -i packages-microsoft-prod.deb
+        sudo add-apt-repository universe
+        sudo apt-get update
+        sudo apt-get install apt-transport-https
+        sudo apt-get update
+        sudo apt-get install dotnet-sdk-3.0
+        sudo apt-get install aspnetcore-runtime-3.0
+    else
+        brew install dotnet-sdk
+        brew install dotnet
+    fi
+
     echo "installing Terraform-to-Pulumi conversion tool (${TF2PULUMI_VERSION}-${OS})"
     curl -L "https://github.com/pulumi/tf2pulumi/releases/download/v${TF2PULUMI_VERSION}/tf2pulumi-v${TF2PULUMI_VERSION}-${OS}-x64.tar.gz" | \
 			tar -xvz -C "$(go env GOPATH)/bin"
