@@ -97,4 +97,10 @@ if [[ "${TRAVIS_OS_NAME:-}" == "linux" ]]; then
 	    --skip-existing \
             --verbose
     fi
+
+    # Finally, publish the NuGet package if any exists.
+    if [ -n "${NUGET_PUBLISH_KEY}" ]; then
+        find "${SOURCE_ROOT}/sdk/dotnet/bin/Debug/" -name '*.nupkg' \
+            -exec dotnet nuget push -k ${NUGET_PUBLISH_KEY} -s https://api.nuget.org/v3/index.json {} ';'
+    fi
 fi
