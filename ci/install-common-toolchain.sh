@@ -18,7 +18,7 @@ esac
 # We're going to use pip3 to install some tools, and the location
 # they are installed to is not on the $PATH by default on OSX Travis
 if [ "${OS}" = "darwin" ]; then
-    export PATH=$HOME/Library/Python/3.6/bin:$PATH
+    export PATH=$HOME/Library/Python/3.7/bin:$PATH
 fi
 
 (
