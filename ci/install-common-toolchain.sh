@@ -1,4 +1,4 @@
-nvm install ${NODE_VERSION-v8.11.1}
+nvm install ${NODE_VERSION-v10.18.1}
 
 # Travis sources this script, so we can export variables into the
 # outer shell, so we don't want to set options like nounset because
