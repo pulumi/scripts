@@ -41,6 +41,7 @@ ALL_PACKAGES=(
 
 USE_LATEST_CLI=true
 USE_LATEST_PACKAGES=true
+SPECIFIC_VERSION=
 
 for ARG in "$@"
 do
@@ -50,6 +51,12 @@ do
             ;;
         --no-latest-packages)
             USE_LATEST_PACKAGES=false
+            ;;
+        --version=*)
+            SPECIFIC_VERSION="${ARG#*=}"
+            USE_LATEST_PACKAGES=false
+            USE_LATEST_CLI=false
+            shift
             ;;
     esac
 done
@@ -72,6 +79,36 @@ if [ "${USE_LATEST_PACKAGES}" = "true" ]; then
         else
             echo "${DEV_VERSION}"
             NODE_OVERRIDES="${NODE_OVERRIDES}:${PACKAGE}=${DEV_VERSION}"
+        fi
+    done
+
+    export PULUMI_TEST_NODE_OVERRIDES="${NODE_OVERRIDES:1}"
+fi
+
+if [ "${SPECIFIC_VERSION}" != "" ]; then
+    echo "Installing ${SPECIFIC_VERSION} of Pulumi CLI"
+    curl -sSL https://get.pulumi.com | bash -s -- --version "$(curl -sSL "http://registry.npmjs.org/-/package/@pulumi/pulumi/dist-tags" | jq -r .\"${SPECIFIC_VERSION}\")"
+
+    NODE_OVERRIDES="";
+
+    echo "Processing Node packages"
+    for PACKAGE in "${ALL_PACKAGES[@]}"; do
+        echo -n "Determining ${SPECIFIC_VERSION} version of ${PACKAGE}..."
+        SPEC_VERSION="$(curl -sSL "http://registry.npmjs.org/-/package/${PACKAGE}/dist-tags" | jq -r .\"${SPECIFIC_VERSION}\")"
+
+        if [ "${SPEC_VERSION}" = "null" ]; then
+            echo -n "Determining 'dev'' version of ${PACKAGE}..."
+            DEV_VERSION="$(curl -sSL "http://registry.npmjs.org/-/package/${PACKAGE}/dist-tags" | jq -r .dev)"
+
+            if [ "${DEV_VERSION}" = "null" ]; then
+                echo "could not compute latest version of ${PACKAGE}, is it missing a dev tag in NPM?"
+            else
+                echo "${DEV_VERSION}"
+                NODE_OVERRIDES="${NODE_OVERRIDES}:${PACKAGE}=${DEV_VERSION}"
+            fi
+        else
+            echo "${SPEC_VERSION}"
+            NODE_OVERRIDES="${NODE_OVERRIDES}:${PACKAGE}=${SPEC_VERSION}"
         fi
     done
 
