@@ -93,11 +93,11 @@ if [ "${SPECIFIC_VERSION}" != "" ]; then
 
     echo "Processing Node packages"
     for PACKAGE in "${ALL_PACKAGES[@]}"; do
-        echo "Determining ${SPECIFIC_VERSION} version of ${PACKAGE}..."
+        echo -n "Determining ${SPECIFIC_VERSION} version of ${PACKAGE}..."
         SPEC_VERSION="$(curl -sSL "http://registry.npmjs.org/-/package/${PACKAGE}/dist-tags" | jq -r .\"${SPECIFIC_VERSION}\")"
 
         if [ "${SPEC_VERSION}" = "null" ]; then
-            echo "could not compute ${SPECIFIC_VERSION} version of ${PACKAGE}, falling back to dev version."
+            echo -n "Determining 'dev'' version of ${PACKAGE}..."
             DEV_VERSION="$(curl -sSL "http://registry.npmjs.org/-/package/${PACKAGE}/dist-tags" | jq -r .dev)"
 
             if [ "${DEV_VERSION}" = "null" ]; then
