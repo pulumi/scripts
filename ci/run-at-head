@@ -113,6 +113,8 @@ if [ "${SPECIFIC_VERSION}" != "" ]; then
     done
 
     export PULUMI_TEST_NODE_OVERRIDES="${NODE_OVERRIDES:1}"
+
+    pushd misc/test && GO111MODULE=on go get "github.com/pulumi/pulumi@${SPECIFIC_VERSION}" && popd
 fi
 
 make "travis_${TRAVIS_EVENT_TYPE}"
