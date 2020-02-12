@@ -63,7 +63,7 @@ fi
 
     # gocovmerge does not publish versioned releases, but it also hasn't been updated in two years, so
     # getting HEAD is pretty safe.
-    go get -v github.com/wadey/gocovmerge
+    GO111MODULE=off go get -v github.com/wadey/gocovmerge
 
     echo "installing pipenv ${PIPENV_VERSION}"
     pip3 install --user "pipenv==${PIPENV_VERSION}"
@@ -103,7 +103,7 @@ fi
 			tar -xvz -C "$(go env GOPATH)/bin"
 
     echo "installing gomod-doccopy"
-    go get -v github.com/pulumi/scripts/gomod-doccopy
+    GO111MODULE=off go get -v github.com/pulumi/scripts/gomod-doccopy
 )
 
 # If the sub shell failed, bail out now.
