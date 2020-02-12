@@ -92,8 +92,8 @@ fi
         sudo apt-get update
         sudo apt-get install apt-transport-https
         sudo apt-get update
-        sudo apt-get install dotnet-sdk-3.0
-        sudo apt-get install aspnetcore-runtime-3.0
+        sudo apt-get install dotnet-sdk-3.1
+        sudo apt-get install aspnetcore-runtime-3.1
     else
         brew cask install dotnet-sdk
     fi
