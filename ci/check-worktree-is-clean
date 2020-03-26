@@ -6,7 +6,7 @@ set -o nounset -o errexit -o pipefail
 # and this addresses that.
 git update-index -q --refresh
 
-if ! git diff-files --quiet; then
+if ! git diff-files --quiet -- . ':(exclude)**/pulumiManifest.go'; then
     >&2 echo "error: working tree is not clean, aborting!"
     git status
     git diff
