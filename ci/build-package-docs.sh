@@ -55,6 +55,9 @@ go get -u github.com/pkg/errors
 # Regenerate the Node.JS SDK docs
 PKGS=${PKG_NAME} NOBUILD=true ./scripts/run_typedoc.sh
 
+# Regenerate the resource docs
+./scripts/gen_resource_docs.sh ${PKG_NAME}
+
 # Regenerate the Python docs
 ./scripts/generate_python_docs.sh
 
