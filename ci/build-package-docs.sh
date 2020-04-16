@@ -64,7 +64,7 @@ case ${PKG_NAME} in
     "pulumi" | "policy")
         echo "Skipping gen_resource_docs step because package doesn't contain any resources."
         ;;
-    "awsx" | "eks" | "kubernetesx")
+    "aiven" | "awsx" | "eks" | "kubernetesx" | "mailgun")
         # gen_resource_docs.sh assumes the package has a `make generate_schema` step.
         echo "Skipping gen_resource_docs step because package hasn't been schematized yet."
         ;;
