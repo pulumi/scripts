@@ -1,5 +1,5 @@
 #!/bin/bash
-# build-package-docs.sh updates the docs generated from the indicated repo
+# build-package-docs.sh updates the docs generated from the indicated repo.
 #
 # Note that if PULUMI_BOT_GITHUB_API_TOKEN is unset, this script will fail. If this happens, the doc build can be run
 # manually by triggering a job using the following steps:
@@ -29,7 +29,7 @@ if [[ -z "${PULUMI_BOT_GITHUB_API_TOKEN:-}" ]]; then
 fi
 
 if [[ -z "${1:-}" ]]; then
-    echo "usage $0 <package-simple-name>"
+    echo "Usage: $0 <package-simple-name>"
     exit 1
 fi
 
@@ -43,10 +43,14 @@ VERSION=${TRAVIS_TAG#"v"}
 
 echo "Building SDK docs for version ${VERSION}:"
 
-# Clone the docs repo and fetch its dependencies.
+# Clone the docs repo and fetch its dependencies, since the bits necessary for
+# generating documentation are found there. (Specifically docs/tools/resourcedocsgen; which
+# has some overrides in the go.mod file that expect code from pulumi/pulumi to be local.)
+git clone "https://github.com/pulumi/pulumi.git" "$(go env GOPATH)/src/github.com/pulumi/pulumi"
 git clone "https://github.com/pulumi/docs.git" "$(go env GOPATH)/src/github.com/pulumi/docs"
+
 cd "$(go env GOPATH)/src/github.com/pulumi/docs"
-make ensure
+make ensure ensure_tools
 
 go get -u github.com/cbroglie/mustache
 go get -u github.com/gobuffalo/packr
@@ -54,6 +58,20 @@ go get -u github.com/pkg/errors
 
 # Regenerate the Node.JS SDK docs
 PKGS=${PKG_NAME} NOBUILD=true ./scripts/run_typedoc.sh
+
+# Regenerate the resource docs (for the specific plugin version) if applicable.
+case ${PKG_NAME} in
+    "pulumi" | "policy")
+        echo "Skipping gen_resource_docs step because package doesn't contain any resources."
+        ;;
+    "aiven" | "awsx" | "eks" | "kubernetesx" | "mailgun")
+        # gen_resource_docs.sh assumes the package has a `make generate_schema` step.
+        echo "Skipping gen_resource_docs step because package hasn't been schematized yet."
+        ;;
+    *)
+        ./scripts/gen_resource_docs.sh ${PKG_NAME} true ${VERSION}
+        ;;
+esac
 
 # Regenerate the Python docs
 ./scripts/generate_python_docs.sh
