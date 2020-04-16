@@ -69,7 +69,7 @@ case ${PKG_NAME} in
         echo "Skipping gen_resource_docs step because package hasn't been schematized yet."
         ;;
     *)
-        ./scripts/gen_resource_docs.sh ${PKG_NAME} true ${VERSION}
+        ./scripts/gen_resource_docs.sh "${PKG_NAME}" true "v${VERSION}"
         ;;
 esac
 
