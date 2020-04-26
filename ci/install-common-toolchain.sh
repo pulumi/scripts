@@ -34,7 +34,7 @@ fi
     AWSCLI_VERSION="${AWSCLI_VERSION:-1.16.304}"
     WHEEL_VERSION="${WHEEL_VERSION:-0.33.6}"
     TWINE_VERSION="${TWINE_VERSION:-1.13.0}"
-    TF2PULUMI_VERSION="${TF2PULUMI_VERSION:-0.6.0}"
+    TF2PULUMI_VERSION="${TF2PULUMI_VERSION:-0.7.0}"
     PANDOC_VERSION="${PANDOC_VERSION:-2.6}"
 
     # jq isn't present on OSX, but we use it in some of our scripts. Install it.
