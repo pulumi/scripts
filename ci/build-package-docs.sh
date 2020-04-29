@@ -74,7 +74,7 @@ case ${PKG_NAME} in
 esac
 
 # Regenerate the Python docs
-./scripts/generate_python_docs.sh
+./scripts/generate_python_docs.sh "${PKG_NAME}"
 
 if [[ "${PKG_NAME}" == "pulumi" ]]; then
     # Regenerate the CLI docs
