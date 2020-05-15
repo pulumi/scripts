@@ -46,7 +46,9 @@ echo "Building SDK docs for version ${VERSION}:"
 # Clone the docs repo and fetch its dependencies, since the bits necessary for
 # generating documentation are found there. (Specifically docs/tools/resourcedocsgen; which
 # has some overrides in the go.mod file that expect code from pulumi/pulumi to be local.)
-git clone "https://github.com/pulumi/pulumi.git" "$(go env GOPATH)/src/github.com/pulumi/pulumi"
+if [[ ! -d "$(go env GOPATH)/src/github.com/pulumi/pulumi" ]]; then
+    git clone "https://github.com/pulumi/pulumi.git" "$(go env GOPATH)/src/github.com/pulumi/pulumi"
+fi
 git clone "https://github.com/pulumi/docs.git" "$(go env GOPATH)/src/github.com/pulumi/docs"
 
 cd "$(go env GOPATH)/src/github.com/pulumi/docs"
