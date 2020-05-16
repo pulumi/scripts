@@ -69,6 +69,8 @@ fi
 # Write the AWS access key found in an environment variable to disk, allowing for
 # transparent IAM role assumption via the AWS SDK.
 function write_aws_config_files() {
+    mkdir -p ${HOME}/.aws/
+
     cat <<EOF >> ${HOME}/.aws/credentials
 [default]
 aws_access_key_id     = ${AWS_ACCESS_KEY_ID}
