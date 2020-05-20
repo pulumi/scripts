@@ -76,7 +76,14 @@ case ${PKG_NAME} in
 esac
 
 # Regenerate the Python docs
-./scripts/generate_python_docs.sh "${PKG_NAME}"
+case ${PKG_NAME} in
+    "awsx" | "eks" | "kubernetesx" | "terraform")
+        echo "Skipping generate_python_docs step because package is not available in Python."
+        ;;
+    *)
+        ./scripts/generate_python_docs.sh "${PKG_NAME}"
+        ;;
+esac
 
 if [[ "${PKG_NAME}" == "pulumi" ]]; then
     # Regenerate the CLI docs
