@@ -62,8 +62,8 @@ if [ -z ${AWS_ACCESS_KEY_ID} ]; then
     echo "ERROR: AWS_ACCESS_KEY_ID not set. Something is not right. (AWS creds not set?)"
 fi
 
-if [ ! -z ${AWS_SESSION_TOKEN} ]; then
-    echo "ERROR: AWS_SESSION_TOKEN is set. Something is not right. (In an assumed role?)"
+if [ -n "${AWS_SECURITY_TOKEN}" ] || [ -n "${AWS_SESSION_TOKEN}" ]; then
+    echo "ERROR: AWS_SECURITY_TOKEN or AWS_SESSION_TOKEN is set. Something is not right. (In an assumed role?)"
 fi
 
 # Write the AWS access key found in an environment variable to disk, allowing for
