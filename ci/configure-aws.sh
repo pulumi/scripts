@@ -48,13 +48,13 @@ function assume_iam_role() {
 
     export AWS_ACCESS_KEY_ID=$(echo ${CREDS_JSON}     | jq ".Credentials.AccessKeyId" --raw-output)
     export AWS_SECRET_ACCESS_KEY=$(echo ${CREDS_JSON} | jq ".Credentials.SecretAccessKey" --raw-output)
-    export AWS_SESSION_TOKEN=$(echo ${CREDS_JSON}    | jq ".Credentials.SessionToken" --raw-output)
+    export AWS_SESSION_TOKEN=$(echo ${CREDS_JSON}     | jq ".Credentials.SessionToken" --raw-output)
 }
 
 # Clear the environment variables set after calling assume_iam_role to get back to
 # the initial state. (Using the default credentials or ${AWS_PROFILE}.)
 function unassume_iam_role() {
-    unset {AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY,AWS_SECURITY_TOKEN}
+    unset {AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY,AWS_SESSION_TOKEN}
 }
 
 # Check information.
@@ -62,8 +62,8 @@ if [ -z ${AWS_ACCESS_KEY_ID} ]; then
     echo "ERROR: AWS_ACCESS_KEY_ID not set. Something is not right. (AWS creds not set?)"
 fi
 
-if [ ! -z ${AWS_SECURITY_TOKEN} ]; then
-    echo "ERROR: AWS_SECURITY_TOKEN is set. Something is not right. (In an assumed role?)"
+if [ ! -z ${AWS_SESSION_TOKEN} ]; then
+    echo "ERROR: AWS_SESSION_TOKEN is set. Something is not right. (In an assumed role?)"
 fi
 
 # Write the AWS access key found in an environment variable to disk, allowing for
@@ -88,7 +88,7 @@ EOF
 
     # Unset AWS_ACCESS_* so that we don't get confused later when we use AWS_PROFILE.
     echo "Unsetting AWS environment variables to rely on the credentials files."
-    unset {AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY}
+    unset {AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY,AWS_SESSION_TOKEN}
 }
 
 if [ -f "${HOME}/.aws/config" -o -f "${HOME}/.aws/credentials" ]; then
