@@ -114,5 +114,3 @@ if [ "${SPECIFIC_VERSION}" != "" ]; then
 
     export PULUMI_TEST_NODE_OVERRIDES="${NODE_OVERRIDES:1}"
 fi
-
-make "travis_${TRAVIS_EVENT_TYPE}"
