@@ -36,6 +36,7 @@ fi
     TWINE_VERSION="${TWINE_VERSION:-1.13.0}"
     TF2PULUMI_VERSION="${TF2PULUMI_VERSION:-0.7.0}"
     PANDOC_VERSION="${PANDOC_VERSION:-2.6}"
+    PULUMICTL_VERSION="${PULUMICTL_VERSION:-0.0.4}"
 
     # jq isn't present on OSX, but we use it in some of our scripts. Install it.
     if [ "${OS}" = "darwin" ]; then
@@ -100,6 +101,10 @@ fi
 
     echo "installing Terraform-to-Pulumi conversion tool (${TF2PULUMI_VERSION}-${OS})"
     curl -L "https://github.com/pulumi/tf2pulumi/releases/download/v${TF2PULUMI_VERSION}/tf2pulumi-v${TF2PULUMI_VERSION}-${OS}-x64.tar.gz" | \
+			tar -xvz -C "$(go env GOPATH)/bin"
+			
+    echo "installing Pulumictl utility tool (${PULUMICTL_VERSION}-${OS})"
+    curl -L "https://github.com/pulumi/pulumictl/releases/download/v${PULUMICTL_VERSION}/pulumictl-v${PULUMICTL_VERSION}-${OS}-amd64.tar.gz" | \
 			tar -xvz -C "$(go env GOPATH)/bin"
 
     echo "installing gomod-doccopy"
