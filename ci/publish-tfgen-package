@@ -11,6 +11,7 @@
 
 set -o errexit
 set -o pipefail
+set -o nounset
 
 if [ "$#" -ne 1 ]; then
     >&2 echo "usage: $0 <path-to-repository-root>"
