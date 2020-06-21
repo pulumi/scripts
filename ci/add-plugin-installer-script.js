@@ -37,7 +37,7 @@ stdin.on("close", function() {
     if (name.lastIndexOf("/") !== -1) {
         name = name.substring(name.lastIndexOf("/")+1);
     }
-    packageJSON.scripts["install"] = `node scripts/install-pulumi-plugin.js resource ${name} ${packageJSON.version}`;
+    packageJSON.scripts["install"] = `node scripts/install-pulumi-plugin.js resource ${name} --server ${packageJSON.repository}/releases/download/${packageJSON.version} ${packageJSON.version}`;
 
     // Now print out the result to stdout.
     console.log(JSON.stringify(packageJSON, null, 4));

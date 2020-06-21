@@ -94,9 +94,9 @@ if [[ "${TRAVIS_OS_NAME:-}" == "linux" ]]; then
     if [ -n "${NO_TFGEN_PYTHON_PACKAGE}" ] ; then
         echo "Skipping publishing pip package because of NO_TFGEN_PYTHON_PACKAGE"
     else
-        echo "Publishing Pip package to pulumi.com:"
+        echo "Publishing Pip package to pypi:"
         twine upload \
-            -u pulumi -p "${PYPI_PASSWORD}" \
+            -u "${PYPI_USERNAME}" -p "${PYPI_PASSWORD}" \
             "${SOURCE_ROOT}/sdk/python/bin/dist/*.tar.gz" \
 	    --skip-existing \
             --verbose
