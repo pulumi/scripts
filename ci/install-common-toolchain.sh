@@ -26,7 +26,6 @@ fi
     [ -e "$(go env GOPATH)/bin" ] || mkdir -p "$(go env GOPATH)/bin"
 
     YARN_VERSION="${YARN_VERSION:-1.13.0}"
-    DEP_VERSION="${DEP_VERSION:-0.5.0}"
     GOLANGCI_LINT_VERSION="${GOLANGCI_LINT_VERSION:-1.27.0}"
     PIP_VERSION="${PIP_VERSION:-10.0.0}"
     VIRTUALENV_VERSION="${VIRTUALENV_VERSION:-15.2.0}"
@@ -36,7 +35,7 @@ fi
     TWINE_VERSION="${TWINE_VERSION:-1.13.0}"
     TF2PULUMI_VERSION="${TF2PULUMI_VERSION:-0.7.0}"
     PANDOC_VERSION="${PANDOC_VERSION:-2.6}"
-    PULUMICTL_VERSION="${PULUMICTL_VERSION:-0.0.4}"
+    PULUMICTL_VERSION="${PULUMICTL_VERSION:-0.0.5}"
 
     # jq isn't present on OSX, but we use it in some of our scripts. Install it.
     if [ "${OS}" = "darwin" ]; then
@@ -52,10 +51,6 @@ fi
 
     echo "installing yarn ${YARN_VERSION}"
     curl -o- -L https://yarnpkg.com/install.sh | bash -s -- --version ${YARN_VERSION}
-
-    echo "installing dep ${DEP_VERSION}"
-    curl -L -o "$(go env GOPATH)/bin/dep" https://github.com/golang/dep/releases/download/v${DEP_VERSION}/dep-${OS}-amd64
-    chmod +x "$(go env GOPATH)/bin/dep"
 
     echo "installing GolangCI-Lint ${GOLANGCI_LINT_VERSION}"
     curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b "$(go env GOPATH)/bin" "v${GOLANGCI_LINT_VERSION}"
