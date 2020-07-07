@@ -1,5 +1,3 @@
-nvm install ${NODE_VERSION-v10.18.1}
-
 # Travis sources this script, so we can export variables into the
 # outer shell, so we don't want to set options like nounset because
 # they would be set in the outer shell as well, so do as much logic as
@@ -25,6 +23,7 @@ fi
     set -o nounset -o errexit -o pipefail
     [ -e "$(go env GOPATH)/bin" ] || mkdir -p "$(go env GOPATH)/bin"
 
+    NODE_VERSION="${NODE_VERSION:-12.18.2}"
     YARN_VERSION="${YARN_VERSION:-1.13.0}"
     GOLANGCI_LINT_VERSION="${GOLANGCI_LINT_VERSION:-1.27.0}"
     PIP_VERSION="${PIP_VERSION:-10.0.0}"
@@ -48,9 +47,12 @@ fi
         pyenv versions
         pyenv global 3.6.7
     fi
+    
+    echo "installing node ${NODE_VERSION}"
+    nvm install "${NODE_VERSION}"
 
     echo "installing yarn ${YARN_VERSION}"
-    curl -o- -L https://yarnpkg.com/install.sh | bash -s -- --version ${YARN_VERSION}
+    curl -o- -L https://yarnpkg.com/install.sh | bash -s -- --version "${YARN_VERSION}"
 
     echo "installing GolangCI-Lint ${GOLANGCI_LINT_VERSION}"
     curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b "$(go env GOPATH)/bin" "v${GOLANGCI_LINT_VERSION}"
