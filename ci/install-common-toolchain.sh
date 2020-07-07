@@ -13,6 +13,12 @@ case $(uname) in
     *) echo "error: unknown host os $(uname)" ; exit 1;;
 esac
 
+# We also install node outside of the subshell, as nvm needs to export
+# variables to the parent shell.
+NODE_VERSION="${NODE_VERSION:-12.18.2}"
+echo "installing node ${NODE_VERSION}"
+nvm install "${NODE_VERSION}"
+
 # We're going to use pip3 to install some tools, and the location
 # they are installed to is not on the $PATH by default on OSX Travis
 if [ "${OS}" = "darwin" ]; then
@@ -23,7 +29,6 @@ fi
     set -o nounset -o errexit -o pipefail
     [ -e "$(go env GOPATH)/bin" ] || mkdir -p "$(go env GOPATH)/bin"
 
-    NODE_VERSION="${NODE_VERSION:-12.18.2}"
     YARN_VERSION="${YARN_VERSION:-1.13.0}"
     GOLANGCI_LINT_VERSION="${GOLANGCI_LINT_VERSION:-1.27.0}"
     PIP_VERSION="${PIP_VERSION:-10.0.0}"
@@ -46,10 +51,7 @@ fi
     if [ "${OS}" = "linux" ]; then
         pyenv versions
         pyenv global 3.6.7
-    fi
-    
-    echo "installing node ${NODE_VERSION}"
-    nvm install "${NODE_VERSION}"
+    fi    
 
     echo "installing yarn ${YARN_VERSION}"
     curl -o- -L https://yarnpkg.com/install.sh | bash -s -- --version "${YARN_VERSION}"
