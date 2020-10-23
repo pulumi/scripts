@@ -27,7 +27,8 @@ stdin.on("line", function(line) {
     packageJSONText += `${line}\n`;
 });
 stdin.on("close", function() {
-    // All stdin is available. Add our install script.
+    let server;
+// All stdin is available. Add our install script.
     const packageJSON = JSON.parse(packageJSONText);
 
     if (!packageJSON.scripts) {
@@ -37,7 +38,17 @@ stdin.on("close", function() {
     if (name.lastIndexOf("/") !== -1) {
         name = name.substring(name.lastIndexOf("/")+1);
     }
-    packageJSON.scripts["install"] = `node scripts/install-pulumi-plugin.js resource ${name} ${packageJSON.version}`;
+    // if plugindownload url exists in the schema
+    // we pass a server plag to the install process
+    // this allows us to support community pluigns
+    const pulumi = packageJSON.pulumi;
+    if ("pluginDownloadURL" in pulumi) {
+        server = `--server ${pulumi["pluginDownloadURL"]}`;
+    }
+    else {
+        server = ""
+    }
+    packageJSON.scripts["install"] = `node scripts/install-pulumi-plugin.js resource ${name} ${packageJSON.version} ${server}`;
 
     // Now print out the result to stdout.
     console.log(JSON.stringify(packageJSON, null, 4));
