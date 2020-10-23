@@ -43,7 +43,7 @@ stdin.on("close", function() {
     // this allows us to support community pluigns
     const pulumi = packageJSON.pulumi;
     if ("pluginDownloadURL" in pulumi) {
-        server = `--server ${pulumi["pluginDownloadURL"]}`;
+        server = `--server "${pulumi["pluginDownloadURL"]}"`;
     }
     else {
         server = ""
