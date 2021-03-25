@@ -42,16 +42,18 @@ if [[ "${TRAVIS_OS_NAME:-}" == "linux" ]]; then
     mv package.json.publish package.json
 
     NPM_TAG="dev"
+    
+    ## We need split the GITHUB_REF into the correct parts
+    ## so that we can test for NPM Tags
+    IFS='/' read -ra my_array <<< "${GITHUB_REF:-}"
+    BRANCH_NAME="${my_array[2]}"
 
-    # We use the "features/" and "feature-" prefix on branches that we want to build and publish for
-    # doing cross repo work. But in this case, we don't want to publish over "dev", since the bits
-    # could be totally busted and the dev tag tracks master.
-    if [[ "${TRAVIS_BRANCH:-}" == features/* ]]; then
-        NPM_TAG=$(echo "${TRAVIS_BRANCH}" | sed -e 's|^features/|feature-|g')
+    if [[ "${BRANCH_NAME}" == features/* ]]; then
+        NPM_TAG=$(echo "${BRANCH_NAME}" | sed -e 's|^features/|feature-|g')
     fi
 
-    if [[ "${TRAVIS_BRANCH:-}" == feature-* ]]; then
-        NPM_TAG=$(echo "${TRAVIS_BRANCH}")
+    if [[ "${BRANCH_NAME}" == feature-* ]]; then
+        NPM_TAG=$(echo "${BRANCH_NAME}")
     fi
 
     # If the package doesn't have a pre-release tag, use the tag of latest instead of
