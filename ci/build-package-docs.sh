@@ -63,7 +63,7 @@ PKGS=${PKG_NAME} NOBUILD=true ./scripts/run_typedoc.sh
 
 # Regenerate the resource docs (for the specific plugin version) if applicable.
 case ${PKG_NAME} in
-    "pulumi" | "policy")
+    "pulumi" | "policy" | "policy-aws")
         echo "Skipping gen_resource_docs step because package doesn't contain any resources."
         ;;
     "awsx" | "eks" | "kubernetesx" | "terraform")
@@ -77,7 +77,7 @@ esac
 
 # Regenerate the Python docs
 case ${PKG_NAME} in
-    "awsx" | "eks" | "kubernetesx" | "terraform")
+    "awsx" | "eks" | "kubernetesx" | "terraform" | "policy-aws")
         echo "Skipping generate_python_docs step because package is not available in Python."
         ;;
     *)
