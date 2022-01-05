@@ -1,5 +1,3 @@
-nvm install ${NODE_VERSION-v10.18.1}
-
 # Travis sources this script, so we can export variables into the
 # outer shell, so we don't want to set options like nounset because
 # they would be set in the outer shell as well, so do as much logic as
@@ -15,6 +13,12 @@ case $(uname) in
     *) echo "error: unknown host os $(uname)" ; exit 1;;
 esac
 
+# We also install node outside of the subshell, as nvm needs to export
+# variables to the parent shell.
+NODE_VERSION="${NODE_VERSION:-12.18.2}"
+echo "installing node ${NODE_VERSION}"
+nvm install "${NODE_VERSION}"
+
 # We're going to use pip3 to install some tools, and the location
 # they are installed to is not on the $PATH by default on OSX Travis
 if [ "${OS}" = "darwin" ]; then
@@ -26,8 +30,7 @@ fi
     [ -e "$(go env GOPATH)/bin" ] || mkdir -p "$(go env GOPATH)/bin"
 
     YARN_VERSION="${YARN_VERSION:-1.13.0}"
-    DEP_VERSION="${DEP_VERSION:-0.5.0}"
-    GOLANGCI_LINT_VERSION="${GOLANGCI_LINT_VERSION:-1.24.0}"
+    GOLANGCI_LINT_VERSION="${GOLANGCI_LINT_VERSION:-1.27.0}"
     PIP_VERSION="${PIP_VERSION:-10.0.0}"
     VIRTUALENV_VERSION="${VIRTUALENV_VERSION:-15.2.0}"
     PIPENV_VERSION="${PIPENV_VERSION:-2018.11.26}"
@@ -36,7 +39,7 @@ fi
     TWINE_VERSION="${TWINE_VERSION:-1.13.0}"
     TF2PULUMI_VERSION="${TF2PULUMI_VERSION:-0.7.0}"
     PANDOC_VERSION="${PANDOC_VERSION:-2.6}"
-    PULUMICTL_VERSION="${PULUMICTL_VERSION:-0.0.4}"
+    PULUMICTL_VERSION="${PULUMICTL_VERSION:-0.0.7}"
 
     # jq isn't present on OSX, but we use it in some of our scripts. Install it.
     if [ "${OS}" = "darwin" ]; then
@@ -48,14 +51,10 @@ fi
     if [ "${OS}" = "linux" ]; then
         pyenv versions
         pyenv global 3.6.7
-    fi
+    fi    
 
     echo "installing yarn ${YARN_VERSION}"
-    curl -o- -L https://yarnpkg.com/install.sh | bash -s -- --version ${YARN_VERSION}
-
-    echo "installing dep ${DEP_VERSION}"
-    curl -L -o "$(go env GOPATH)/bin/dep" https://github.com/golang/dep/releases/download/v${DEP_VERSION}/dep-${OS}-amd64
-    chmod +x "$(go env GOPATH)/bin/dep"
+    curl -o- -L https://yarnpkg.com/install.sh | bash -s -- --version "${YARN_VERSION}"
 
     echo "installing GolangCI-Lint ${GOLANGCI_LINT_VERSION}"
     curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b "$(go env GOPATH)/bin" "v${GOLANGCI_LINT_VERSION}"

@@ -46,6 +46,10 @@ SPECIFIC_VERSION=
 for ARG in "$@"
 do
     case "${ARG}" in
+        --default)
+            USE_LATEST_CLI=true
+            USE_LATEST_PACKAGES=true
+            ;;
         --no-latest-cli)
             USE_LATEST_CLI=false
             ;;

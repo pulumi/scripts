@@ -17,26 +17,6 @@ if [ "$#" -ne 1 ]; then
     exit 1
 fi
 
-if [[ -z "$PYPI_USERNAME" ]]; then
-    echo "Must provide PYPI_USERNAME" 1>&2
-    exit 1
-fi
-
-if [[ -z "$PYPI_PASSWORD" ]]; then
-    echo "Must provide PYPI_PASSWORD" 1>&2
-    exit 1
-fi
-
-if [[ -z "$NUGET_PUBLISH_KEY" ]]; then
-    echo "Must provide NUGET_PUBLISH_KEY" 1>&2
-    exit 1
-fi
-
-if [[ -z "$NPM_TOKEN" ]]; then
-    echo "Must provide NPM_TOKEN" 1>&2
-    exit 1
-fi
-
 SCRIPT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 SOURCE_ROOT="$1"
 
@@ -62,6 +42,19 @@ if [[ "${TRAVIS_OS_NAME:-}" == "linux" ]]; then
     mv package.json.publish package.json
 
     NPM_TAG="dev"
+    
+    ## We need split the GITHUB_REF into the correct parts
+    ## so that we can test for NPM Tags
+    IFS='/' read -ra my_array <<< "${GITHUB_REF:-}"
+    BRANCH_NAME="${my_array[2]}"
+
+    if [[ "${BRANCH_NAME}" == features/* ]]; then
+        NPM_TAG=$(echo "${BRANCH_NAME}" | sed -e 's|^features/|feature-|g')
+    fi
+
+    if [[ "${BRANCH_NAME}" == feature-* ]]; then
+        NPM_TAG=$(echo "${BRANCH_NAME}")
+    fi
 
     # If the package doesn't have a pre-release tag, use the tag of latest instead of
     # dev. NPM uses this tag as the default version to add, so we want it to mean
@@ -70,6 +63,15 @@ if [[ "${TRAVIS_OS_NAME:-}" == "linux" ]]; then
     PKG_VERSION=$(jq -r .version < package.json)
     if [[ "${PKG_VERSION}" != *-dev* ]] && [[ "${PKG_VERSION}" != *-alpha* ]]; then
         NPM_TAG="latest"
+    fi
+
+    # we need to set explicit beta and rc tags to ensure that we don't mutate to use the latest tag
+    if [[ "${PKG_VERSION}" == *-beta* ]]; then
+        NPM_TAG="beta"
+    fi
+
+    if [[ "${PKG_VERSION}" == *-rc* ]]; then
+        NPM_TAG="rc"
     fi
 
     # Now, perform the publish. The logic here is a little goofy because npm provides
@@ -99,16 +101,27 @@ if [[ "${TRAVIS_OS_NAME:-}" == "linux" ]]; then
     mv package.json.dev package.json
     popd
 
-    echo "Publishing Pip package to pypi:"
-    twine upload \
-        -u "${PYPI_USERNAME}" -p "${PYPI_PASSWORD}" \
-        "${SOURCE_ROOT}/sdk/python/bin/dist/*.tar.gz" \
+    if [ -n "${PYPI_USERNAME}" ] ; then
+        PYPI_PUBLISH_USERNAME=${PYPI_USERNAME}
+    else
+        PYPI_PUBLISH_USERNAME="pulumi"
+    fi
+
+    # Next, publish the PyPI package, if we didn't opt out
+    if [ -n "${NO_TFGEN_PYTHON_PACKAGE}" ] ; then
+        echo "Skipping publishing pip package because of NO_TFGEN_PYTHON_PACKAGE"
+    else
+        echo "Publishing Pip package to pypi as ${PYPI_PUBLISH_USERNAME}:"
+        twine upload \
+            -u "${PYPI_PUBLISH_USERNAME}" -p "${PYPI_PASSWORD}" \
+            "${SOURCE_ROOT}/sdk/python/bin/dist/*.tar.gz" \
 	    --skip-existing \
-        --verbose
+            --verbose
+    fi
 
     # Finally, publish the NuGet package if any exists.
     if [ -n "${NUGET_PUBLISH_KEY}" ]; then
         find "${SOURCE_ROOT}/sdk/dotnet/bin/Debug/" -name 'Pulumi.*.nupkg' \
-            -exec dotnet nuget push -k ${NUGET_PUBLISH_KEY} -s https://api.nuget.org/v3/index.json {} ';'
+            -exec dotnet nuget push -k "${NUGET_PUBLISH_KEY}" -s https://api.nuget.org/v3/index.json {} ';'
     fi
 fi
