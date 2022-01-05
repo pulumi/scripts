@@ -33,11 +33,19 @@ stdin.on("close", function() {
     if (!packageJSON.scripts) {
         packageJSON.scripts = {};
     }
+
+    var args;
+
+    if (packageJSON.pulumi.pluginDownloadURL) {
+        args = `resource ${name} --server ${packageJSON.pulumi.pluginDownloadURL} ${packageJSON.version}`
+    } else {
+        args = `resource ${name} ${packageJSON.version}`
+    }
     var name = packageJSON.name;
     if (name.lastIndexOf("/") !== -1) {
         name = name.substring(name.lastIndexOf("/")+1);
     }
-    packageJSON.scripts["install"] = `node scripts/install-pulumi-plugin.js resource ${name} ${packageJSON.version}`;
+    packageJSON.scripts["install"] = `node scripts/install-pulumi-plugin.js ${args}`;
 
     // Now print out the result to stdout.
     console.log(JSON.stringify(packageJSON, null, 4));
