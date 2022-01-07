@@ -38,6 +38,9 @@ stdin.on("close", function() {
     if (name.lastIndexOf("/") !== -1) {
         name = name.substring(name.lastIndexOf("/")+1);
     }
+    if (name.lastIndexOf("-") !== -1) {
+        name = name.substring(name.lastIndexOf("-")+1);
+    }
 
     var args;
     if (packageJSON.pulumi.pluginDownloadURL) {
