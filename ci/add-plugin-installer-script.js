@@ -43,8 +43,12 @@ stdin.on("close", function() {
     }
 
     var args;
-    if (packageJSON.pulumi.pluginDownloadURL) {
+
+
+    if (packageJSON.pulumi.pluginDownloadURL)  {
         args = `resource ${name} --server ${packageJSON.pulumi.pluginDownloadURL} ${packageJSON.version}`
+    } else if (packageJSON.pulumi.server) {
+        args = `resource ${name} --server ${packageJSON.pulumi.server} ${packageJSON.version}`
     } else {
         args = `resource ${name} ${packageJSON.version}`
     }

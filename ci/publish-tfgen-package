@@ -32,8 +32,10 @@ if [[ "${TRAVIS_OS_NAME:-}" == "linux" ]]; then
 
     # First, add an install script to our package.json
     mkdir -p "${SOURCE_ROOT}/sdk/nodejs/bin/scripts"
-    cp "${SCRIPT_ROOT}/install-pulumi-plugin.js" \
-       "${SOURCE_ROOT}/sdk/nodejs/bin/scripts"
+    if [ ! "${SOURCE_ROOT}/sdk/nodejs/bin/scripts/install-pulumi-plugin.js" ]; then
+        cp "${SCRIPT_ROOT}/install-pulumi-plugin.js" \
+        "${SOURCE_ROOT}/sdk/nodejs/bin/scripts"
+    fi
     node "${SCRIPT_ROOT}/add-plugin-installer-script.js" < \
         "${SOURCE_ROOT}/sdk/nodejs/bin/package.json" > \
         "${SOURCE_ROOT}/sdk/nodejs/bin/package.json.publish"
