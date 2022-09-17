@@ -11,7 +11,6 @@
 
 set -o errexit
 set -o pipefail
-set -x
 
 if [ "$#" -ne 1 ]; then
     >&2 echo "usage: $0 <path-to-repository-root>"
@@ -33,7 +32,8 @@ if [[ "${TRAVIS_OS_NAME:-}" == "linux" ]]; then
 
     # First, add an install script to our package.json
     mkdir -p "${SOURCE_ROOT}/sdk/nodejs/bin/scripts"
-    if [ ! "${SOURCE_ROOT}/sdk/nodejs/bin/scripts/install-pulumi-plugin.js" ]; then
+    if [ ! -f "${SOURCE_ROOT}/sdk/nodejs/bin/scripts/install-pulumi-plugin.js" ]; then
+        echo "Didn't find existing plugin plugin installer"
         cp "${SCRIPT_ROOT}/install-pulumi-plugin.js" \
         "${SOURCE_ROOT}/sdk/nodejs/bin/scripts"
     fi
