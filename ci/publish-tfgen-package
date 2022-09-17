@@ -11,6 +11,7 @@
 
 set -o errexit
 set -o pipefail
+set -x
 
 if [ "$#" -ne 1 ]; then
     >&2 echo "usage: $0 <path-to-repository-root>"
@@ -42,6 +43,7 @@ if [[ "${TRAVIS_OS_NAME:-}" == "linux" ]]; then
     pushd "${SOURCE_ROOT}/sdk/nodejs/bin"
     mv package.json package.json.dev
     mv package.json.publish package.json
+    cat package.json
 
     NPM_TAG="dev"
     
