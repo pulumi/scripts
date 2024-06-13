@@ -32,14 +32,18 @@ if [[ "${TRAVIS_OS_NAME:-}" == "linux" ]]; then
 
     # First, add an install script to our package.json
     mkdir -p "${SOURCE_ROOT}/sdk/nodejs/bin/scripts"
-    cp "${SCRIPT_ROOT}/install-pulumi-plugin.js" \
-       "${SOURCE_ROOT}/sdk/nodejs/bin/scripts"
+    if [ ! -f "${SOURCE_ROOT}/sdk/nodejs/bin/scripts/install-pulumi-plugin.js" ]; then
+        echo "Didn't find existing plugin plugin installer"
+        cp "${SCRIPT_ROOT}/install-pulumi-plugin.js" \
+        "${SOURCE_ROOT}/sdk/nodejs/bin/scripts"
+    fi
     node "${SCRIPT_ROOT}/add-plugin-installer-script.js" < \
         "${SOURCE_ROOT}/sdk/nodejs/bin/package.json" > \
         "${SOURCE_ROOT}/sdk/nodejs/bin/package.json.publish"
     pushd "${SOURCE_ROOT}/sdk/nodejs/bin"
     mv package.json package.json.dev
     mv package.json.publish package.json
+    cat package.json
 
     NPM_TAG="dev"
 
@@ -84,7 +88,7 @@ if [[ "${TRAVIS_OS_NAME:-}" == "linux" ]]; then
     # We exploit the fact that `npm info <package-name>@<package-version>` has no output
     # when the package does not exist.
     if [ "$(npm info ${PKG_NAME}@${PKG_VERSION})" == "" ]; then
-        if ! npm publish -tag "${NPM_TAG}"; then
+        if ! npm publish --access public -tag "${NPM_TAG}"; then
 	    # if we get here, we have a TOCTOU issue, so check again
 	    # to see if it published. If it didn't bail out.
 	    if [ "$(npm info ${PKG_NAME}@${PKG_VERSION})" == "" ]; then
@@ -162,7 +166,7 @@ if [[ "${TRAVIS_OS_NAME:-}" == "linux" ]]; then
 
     # Finally, publish the NuGet package if any exists.
     if [ -n "${NUGET_PUBLISH_KEY}" ]; then
-        find "${SOURCE_ROOT}/sdk/dotnet/bin/Debug/" -name 'Pulumi.*.nupkg' \
-            -exec dotnet nuget push -k "${NUGET_PUBLISH_KEY}" -s https://api.nuget.org/v3/index.json {} ';'
+        find "${SOURCE_ROOT}/sdk/dotnet/bin/Debug/" -name '*.*.nupkg' | \
+            xargs dotnet nuget push -k "${NUGET_PUBLISH_KEY}" -s https://api.nuget.org/v3/index.json
     fi
 fi
